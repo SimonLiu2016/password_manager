@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128"
+    xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="fingerprintGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#21CBF3;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#03DAC6;stop-opacity:1" />
+        </linearGradient>
+
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- 背景圆形 -->
+    <circle cx="64" cy="64" r="60" fill="rgba(33, 150, 243, 0.1)" stroke="url(#fingerprintGradient)" stroke-width="2"/>
+
+    <!-- 指纹纹路 -->
+    <g fill="none" stroke="url(#fingerprintGradient)" stroke-width="2.5" stroke-linecap="round" filter="url(#glow)">
+        <!-- 中心点 -->
+        <circle cx="64" cy="64" r="3" fill="url(#fingerprintGradient)"/>
+
+        <!-- 内层纹路 -->
+        <ellipse cx="64" cy="64" rx="8" ry="12"/>
+        <ellipse cx="64" cy="64" rx="14" ry="20"/>
+        <ellipse cx="64" cy="64" rx="20" ry="28"/>
+
+        <!-- 中层纹路 -->
+        <path d="M 44 64 Q 44 44 64 44 Q 84 44 84 64 Q 84 84 64 84"/>
+        <path d="M 38 64 Q 38 38 64 38 Q 90 38 90 64 Q 90 90 64 90"/>
+
+        <!-- 外层纹路 -->
+        <path d="M 32 64 Q 32 32 64 32 Q 96 32 96 64"/>
+        <path d="M 26 64 Q 26 26 64 26 Q 102 26 102 64"/>
+
+        <!-- 特征线条 -->
+        <path d="M 54 44 Q 64 54 74 44"/>
+        <path d="M 50 84 Q 64 74 78 84"/>
+
+        <!-- 侧边特征 -->
+        <path d="M 44 54 Q 38 64 44 74"/>
+        <path d="M 84 54 Q 90 64 84 74"/>
+
+        <!-- 底部特征 -->
+        <path d="M 58 90 Q 64 84 70 90"/>
+        <path d="M 52 96 Q 64 88 76 96"/>
+    </g>
+
+    <!-- 扫描线动画效果 -->
+    <line x1="10" y1="64" x2="118" y2="64" stroke="rgba(33, 203, 243, 0.6)" stroke-width="1" opacity="0.8">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+    </line>
+</svg>

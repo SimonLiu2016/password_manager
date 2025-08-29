@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 32 32"
+    xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="unlockedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+
+    <!-- 锁体 -->
+    <rect x="2" y="12" width="28" height="18" rx="3" ry="3" fill="url(#unlockedGradient)"/>
+
+    <!-- 锁孔 -->
+    <circle cx="16" cy="20" r="2.5" fill="white"/>
+    <rect x="14.5" y="20" width="3" height="4" fill="white"/>
+
+    <!-- 开启的锁扣 -->
+    <path d="M 8 12 Q 8 4 16 4 Q 24 4 24 6" fill="none" stroke="url(#unlockedGradient)" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- 成功标志 -->
+    <circle cx="26" cy="6" r="5" fill="#4CAF50"/>
+    <path d="M 23.5 6 L 25.5 8 L 28.5 4.5" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,46 @@
+name: password_manager
+description: "A secure and feature-rich password manager application developed by V8EN."
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+# Project Information
+homepage: https://v8en.com
+repository: https://github.com/v8en/password_manager
+issue_tracker: https://github.com/v8en/password_manager/issues
+
+# Author and Organization Information
+author: Simon <582883825@qq.com>
+organization: V8EN
+organization_url: https://v8en.com
+contact: 582883825@qq.com
+
+environment:
+  sdk: ^3.8.1
+dependencies:
+  flutter:
+    sdk: flutter
+  window_manager: ^0.5.0 # 用于窗口管理
+  # window_manager_plus: ^1.0.5  # 用于多窗口管理
+  flutter_local_notifications: ^19.3.0 # 用于通知
+  shared_preferences: ^2.5.3 # 用于简单数据存储
+  encrypt: ^5.0.3 # 用于密码加密
+  local_auth: ^2.3.0 # 用于生物识别认证
+  flutter_secure_storage: ^9.2.4 # 用于安全存储密码
+  app_links: ^6.3.3
+  bot_toast: ^4.0.1
+  tray_manager: ^0.5.0
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.5 # 用于状态管理
+  path_provider: ^2.1.5
+  url_launcher: ^6.3.2 # 用于打开外部链接
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - images/

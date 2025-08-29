@@ -1,0 +1,81 @@
+# Password Manager - Copyright Information
+
+Copyright (c) 2024 V8EN
+All rights reserved.
+
+Organization: V8EN
+Website: https://v8en.com
+Contact: 582883825@qq.com
+
+Author: Simon
+Email: 582883825@qq.com
+
+## Project Information:
+
+This Password Manager application is a secure, cross-platform password management
+solution developed by V8EN organization. The application supports 9 different types
+of password entries with enterprise-grade AES-256 encryption.
+
+Key Features:
+
+- Multi-type password support (Login, Credit Card, Identity, Server, Database, Device, WiFi, Secure Note, Software License)
+- AES-256 ECB encryption for sensitive data
+- Biometric authentication support
+- System tray integration for desktop platforms
+- Modern Material Design 3 interface
+- Cross-platform compatibility (Windows, macOS, Linux, Android, iOS, Web)
+
+Technology Stack:
+
+- Framework: Flutter 3.8.1+
+- Language: Dart 3.0+
+- State Management: Provider
+- Encryption: AES-256 ECB
+- Local Storage: Flutter Secure Storage + SharedPreferences
+
+Architecture:
+
+- Layered Architecture (Presentation, Data, Utils)
+- Repository Pattern for data access
+- Provider Pattern for state management
+- Singleton Pattern for encryption and authentication services
+
+Development Team:
+
+- Lead Developer: Simon
+- Organization: V8EN
+- Technical Support: 582883825@qq.com
+
+## License Information:
+
+This software is proprietary and confidential. All rights are reserved by V8EN.
+Unauthorized copying, distribution, or modification of this software is strictly prohibited.
+
+For licensing inquiries, please contact:
+Email: 582883825@qq.com
+Website: https://v8en.com
+
+## Third-Party Acknowledgments:
+
+This application uses various open-source Flutter packages and libraries.
+Please refer to pubspec.yaml for the complete list of dependencies and their respective licenses.
+
+## Contact Information:
+
+For technical support, feature requests, or general inquiries:
+
+Organization: V8EN
+Website: https://v8en.com
+Email: 582883825@qq.com
+Developer: Simon
+
+Support Hours:
+
+- Monday to Friday: 9:00 AM - 6:00 PM (UTC+8)
+- Response time: Within 24 hours for general inquiries
+
+## Version History:
+
+v1.0.0+1 - Initial release with full password management functionality
+
+Last Updated: 2024
