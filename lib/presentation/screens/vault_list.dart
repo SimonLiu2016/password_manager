@@ -15,6 +15,36 @@ import 'package:password_manager/app/app_theme.dart';
 import 'package:password_manager/data/models/password_entry.dart';
 import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:password_manager/l10n/app_localizations.dart';
+
+// 为了实现国际化，我们需要直接访问既有的本地化类
+
+// 将本地化的分类名称映射回密码类型
+PasswordEntryType? _getPasswordTypeFromLocalizedName(
+  String localizedName,
+  AppLocalizations l10n,
+) {
+  if (localizedName == l10n.loginInfo) {
+    return PasswordEntryType.login;
+  } else if (localizedName == l10n.creditCard) {
+    return PasswordEntryType.creditCard;
+  } else if (localizedName == l10n.identity) {
+    return PasswordEntryType.identity;
+  } else if (localizedName == l10n.server) {
+    return PasswordEntryType.server;
+  } else if (localizedName == l10n.database) {
+    return PasswordEntryType.database;
+  } else if (localizedName == l10n.secureDevice) {
+    return PasswordEntryType.device;
+  } else if (localizedName == l10n.wifiPassword) {
+    return PasswordEntryType.wifi;
+  } else if (localizedName == l10n.secureNote) {
+    return PasswordEntryType.secureNote;
+  } else if (localizedName == l10n.softwareLicense) {
+    return PasswordEntryType.license;
+  }
+  return null;
+}
 
 // 定义颜色数组 - 更现代化的色彩搭配
 const List<Color> titleBoxColors = [
@@ -90,17 +120,27 @@ class _VaultListState extends State<VaultList> {
       );
     }
     // 按分类筛选
-    else if (widget.selectedCategory == '收藏') {
+    else if (widget.selectedCategory ==
+        AppLocalizations.of(context)!.favorites) {
       // 收藏分类筛选
       filteredPasswords = passwords
           .where((password) => password.isFavorite)
           .toList();
-    } else if (widget.selectedCategory != '所有项目') {
-      // 其他分类筛选
-      filteredPasswords = passwords.where((password) {
-        final typeName = PasswordEntryTypeConfig.getName(password.type);
-        return typeName == widget.selectedCategory;
-      }).toList();
+    } else if (widget.selectedCategory !=
+        AppLocalizations.of(context)!.allItems) {
+      // 其他分类筛选 - 使用类型匹配而不是名称匹配
+      final targetType = _getPasswordTypeFromLocalizedName(
+        widget.selectedCategory,
+        AppLocalizations.of(context)!,
+      );
+      if (targetType != null) {
+        filteredPasswords = passwords
+            .where((password) => password.type == targetType)
+            .toList();
+      } else {
+        // 如果找不到对应的类型，返回空列表
+        filteredPasswords = [];
+      }
     }
 
     // 再按搜索关键词筛选
@@ -124,7 +164,8 @@ class _VaultListState extends State<VaultList> {
         children: [
           // 搜索结果统计
           if (widget.searchQuery.isNotEmpty ||
-              widget.selectedCategory != '所有项目' ||
+              widget.selectedCategory !=
+                  AppLocalizations.of(context)!.allItems ||
               (widget.selectedTag != null && widget.selectedTag!.isNotEmpty))
             Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -137,19 +178,27 @@ class _VaultListState extends State<VaultList> {
                                   widget.selectedTag!.isNotEmpty
                               ? Icons.label_rounded
                               : Icons.filter_list_rounded),
-                    color: AppTheme.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     size: 16,
                   ),
                   SizedBox(width: 8),
                   Text(
                     widget.searchQuery.isNotEmpty
-                        ? '找到 ${filteredPasswords.length} 个结果'
+                        ? AppLocalizations.of(
+                            context,
+                          )!.foundResults(filteredPasswords.length)
                         : (widget.selectedTag != null &&
                                   widget.selectedTag!.isNotEmpty
-                              ? '标签 "${widget.selectedTag}": ${filteredPasswords.length} 个项目'
-                              : '${widget.selectedCategory}: ${filteredPasswords.length} 个项目'),
+                              ? AppLocalizations.of(context)!.tagItems(
+                                  widget.selectedTag!,
+                                  filteredPasswords.length,
+                                )
+                              : AppLocalizations.of(context)!.categoryItems(
+                                  widget.selectedCategory,
+                                  filteredPasswords.length,
+                                )),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -207,19 +256,21 @@ class _VaultListState extends State<VaultList> {
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppTheme.primaryBlue.withOpacity(0.08)
+                  ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
                   : Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? AppTheme.primaryBlue.withOpacity(0.3)
+                    ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
                     : Colors.transparent,
                 width: 2,
               ),
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: AppTheme.primaryBlue.withOpacity(0.15),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.15),
                         blurRadius: 8,
                         offset: Offset(0, 2),
                       ),
@@ -269,8 +320,8 @@ class _VaultListState extends State<VaultList> {
                             ?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: isSelected
-                                  ? AppTheme.primaryBlue
-                                  : AppTheme.textPrimary,
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.onSurface,
                             ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -279,9 +330,9 @@ class _VaultListState extends State<VaultList> {
                       Text(
                         password.username.isNotEmpty
                             ? password.username
-                            : '无用户名',
+                            : AppLocalizations.of(context)!.noUsername,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -292,7 +343,9 @@ class _VaultListState extends State<VaultList> {
                           password.url!,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
-                                color: AppTheme.textSecondary.withOpacity(0.7),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant.withOpacity(0.7),
                               ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -309,8 +362,8 @@ class _VaultListState extends State<VaultList> {
                   child: Icon(
                     Icons.chevron_right_rounded,
                     color: isSelected
-                        ? AppTheme.primaryBlue
-                        : AppTheme.textSecondary,
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                     size: 20,
                   ),
                 ),
@@ -333,15 +386,21 @@ class _VaultListState extends State<VaultList> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppTheme.textSecondary.withOpacity(0.1),
-                  AppTheme.textSecondary.withOpacity(0.05),
+                  Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withOpacity(0.1),
+                  Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withOpacity(0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(60),
               border: Border.all(
-                color: AppTheme.textSecondary.withOpacity(0.2),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withOpacity(0.2),
                 width: 2,
               ),
             ),
@@ -353,7 +412,9 @@ class _VaultListState extends State<VaultList> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppTheme.textSecondary.withOpacity(0.05),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(40),
                   ),
                 ),
@@ -361,7 +422,9 @@ class _VaultListState extends State<VaultList> {
                 Icon(
                   Icons.security_rounded,
                   size: 48,
-                  color: AppTheme.textSecondary.withOpacity(0.6),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withOpacity(0.6),
                 ),
                 // 装饰性加号
                 Positioned(
@@ -371,11 +434,13 @@ class _VaultListState extends State<VaultList> {
                     width: 24,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryBlue,
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryBlue.withOpacity(0.3),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.3),
                           blurRadius: 4,
                           offset: Offset(0, 2),
                         ),
@@ -393,9 +458,11 @@ class _VaultListState extends State<VaultList> {
           ),
           SizedBox(height: 32),
           Text(
-            widget.searchQuery.isNotEmpty ? '未找到匹配的密码' : '还没有密码条目',
+            widget.searchQuery.isNotEmpty
+                ? AppLocalizations.of(context)!.noSearchResults
+                : AppLocalizations.of(context)!.noPasswords,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: AppTheme.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -404,10 +471,10 @@ class _VaultListState extends State<VaultList> {
             constraints: BoxConstraints(maxWidth: 280),
             child: Text(
               widget.searchQuery.isNotEmpty
-                  ? '试试使用不同的关键词搜索，或检查拼写是否正确'
-                  : '点击上方的蓝色“添加密码”按钮来创建你的第一个密码条目',
+                  ? AppLocalizations.of(context)!.noSearchResultsSubtitle
+                  : AppLocalizations.of(context)!.noPasswordsSubtitle,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppTheme.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,

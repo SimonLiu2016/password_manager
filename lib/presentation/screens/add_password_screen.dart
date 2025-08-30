@@ -16,6 +16,7 @@ import 'package:password_manager/app/app_theme.dart';
 import 'package:password_manager/data/models/password_entry.dart';
 import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:password_manager/presentation/screens/password_generator.dart';
+import 'package:password_manager/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 class AddPasswordScreen extends StatefulWidget {
@@ -78,9 +79,9 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
   void _copyToClipboard(String text) {
     if (text.isNotEmpty) {
       Clipboard.setData(ClipboardData(text: text));
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('内容已复制到剪贴板')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.contentCopied)),
+      );
     }
   }
 
@@ -100,6 +101,32 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
     setState(() {
       _tags.remove(tag);
     });
+  }
+
+  // 获取本地化的类型名称
+  String _getLocalizedTypeName(PasswordEntryType type, AppLocalizations l10n) {
+    switch (type) {
+      case PasswordEntryType.login:
+        return l10n.loginInfo;
+      case PasswordEntryType.creditCard:
+        return l10n.creditCard;
+      case PasswordEntryType.identity:
+        return l10n.identity;
+      case PasswordEntryType.server:
+        return l10n.server;
+      case PasswordEntryType.database:
+        return l10n.database;
+      case PasswordEntryType.device:
+        return l10n.secureDevice;
+      case PasswordEntryType.wifi:
+        return l10n.wifiPassword;
+      case PasswordEntryType.secureNote:
+        return l10n.secureNote;
+      case PasswordEntryType.license:
+        return l10n.softwareLicense;
+      default:
+        return PasswordEntryTypeConfig.getName(type);
+    }
   }
 
   // 改变类型
@@ -140,9 +167,11 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       // 保存到仓库并返回主页面
       provider.savePassword(newPassword).then((_) {
         Navigator.pop(context, true);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('新密码已添加')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.newPasswordAdded),
+          ),
+        );
       });
     }
   }
@@ -154,7 +183,11 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('添加${PasswordEntryTypeConfig.getName(_selectedType)}'),
+        title: Text(
+          AppLocalizations.of(context)!.addPasswordTitle(
+            _getLocalizedTypeName(_selectedType, AppLocalizations.of(context)!),
+          ),
+        ),
         actions: [
           Container(
             margin: EdgeInsets.only(right: 16, top: 8, bottom: 8),
@@ -175,7 +208,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
                       Icon(Icons.save_rounded, color: Colors.white, size: 18),
                       SizedBox(width: 6),
                       Text(
-                        '保存',
+                        AppLocalizations.of(context)!.save,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 15,
@@ -205,7 +238,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
-                  labelText: '标题 *',
+                  labelText: '${AppLocalizations.of(context)!.title} *',
                   border: const OutlineInputBorder(),
                   prefixIcon: Icon(Icons.title),
                   hintText: '例如：GitHub、网易邮箱、公司服务器',
@@ -213,7 +246,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return '请输入标题';
+                    return AppLocalizations.of(context)!.titleRequired;
                   }
                   return null;
                 },
@@ -222,7 +255,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
 
               // 动态字段
               Text(
-                '基本信息',
+                AppLocalizations.of(context)!.basicInfo,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textPrimary,
@@ -242,12 +275,12 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
               // 备注
               TextFormField(
                 controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: '备注',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.notes,
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.note),
                   alignLabelWithHint: true,
-                  hintText: '添加额外信息（如安全问题答案）',
+                  hintText: AppLocalizations.of(context)!.notesPlaceholder,
                 ),
                 maxLines: 3,
               ),
@@ -269,7 +302,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '选择类型',
+          AppLocalizations.of(context)!.selectType,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,
@@ -341,7 +374,10 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            config['name'],
+                            _getLocalizedTypeName(
+                              type,
+                              AppLocalizations.of(context)!,
+                            ),
                             style: TextStyle(
                               color: isSelected
                                   ? Color(config['color'])
@@ -537,7 +573,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '标签',
+          AppLocalizations.of(context)!.tags,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,
@@ -549,8 +585,8 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
             Expanded(
               child: TextFormField(
                 controller: _tagController,
-                decoration: const InputDecoration(
-                  labelText: '添加标签',
+                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.addTag,
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.label),
                   hintText: '输入标签名称',
@@ -599,7 +635,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '密码生成器',
+          AppLocalizations.of(context)!.passwordGeneratorTitle,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,

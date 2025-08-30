@@ -13,6 +13,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:password_manager/app/app_theme.dart';
+import 'package:password_manager/l10n/app_localizations.dart';
 import 'dart:math';
 
 class PasswordGenerator extends StatefulWidget {
@@ -63,8 +64,8 @@ class _PasswordGeneratorState extends State<PasswordGenerator> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                '密码生成器',
+              Text(
+                AppLocalizations.of(context)!.passwordGeneratorTitle,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
@@ -104,7 +105,10 @@ class _PasswordGeneratorState extends State<PasswordGenerator> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [const Text('密码长度'), Text('$_passwordLength')],
+                    children: [
+                      Text(AppLocalizations.of(context)!.passwordLength),
+                      Text('$_passwordLength'),
+                    ],
                   ),
                   Slider(
                     value: _passwordLength.toDouble(),
@@ -123,7 +127,7 @@ class _PasswordGeneratorState extends State<PasswordGenerator> {
               Column(
                 children: [
                   CheckboxListTile(
-                    title: const Text('包含大写字母 (A-Z)'),
+                    title: Text(AppLocalizations.of(context)!.includeUppercase),
                     value: _includeUppercase,
                     onChanged: (value) {
                       setState(() => _includeUppercase = value ?? true);
@@ -133,7 +137,7 @@ class _PasswordGeneratorState extends State<PasswordGenerator> {
                     contentPadding: EdgeInsets.zero,
                   ),
                   CheckboxListTile(
-                    title: const Text('包含小写字母 (a-z)'),
+                    title: Text(AppLocalizations.of(context)!.includeLowercase),
                     value: _includeLowercase,
                     onChanged: (value) {
                       setState(() => _includeLowercase = value ?? true);
@@ -143,7 +147,7 @@ class _PasswordGeneratorState extends State<PasswordGenerator> {
                     contentPadding: EdgeInsets.zero,
                   ),
                   CheckboxListTile(
-                    title: const Text('包含数字 (0-9)'),
+                    title: Text(AppLocalizations.of(context)!.includeNumbers),
                     value: _includeNumbers,
                     onChanged: (value) {
                       setState(() => _includeNumbers = value ?? true);
@@ -153,7 +157,7 @@ class _PasswordGeneratorState extends State<PasswordGenerator> {
                     contentPadding: EdgeInsets.zero,
                   ),
                   CheckboxListTile(
-                    title: const Text('包含特殊字符 (!@#\$等)'),
+                    title: Text(AppLocalizations.of(context)!.includeSymbols),
                     value: _includeSymbols,
                     onChanged: (value) {
                       setState(() => _includeSymbols = value ?? true);
@@ -196,7 +200,7 @@ class _PasswordGeneratorState extends State<PasswordGenerator> {
                         ),
                         SizedBox(width: 8),
                         Text(
-                          '重新生成',
+                          AppLocalizations.of(context)!.regenerate,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 15,
@@ -266,8 +270,8 @@ class _PasswordGeneratorState extends State<PasswordGenerator> {
 
   void _copyToClipboard() {
     Clipboard.setData(ClipboardData(text: _generatedPassword));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('密码已复制到剪贴板')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.passwordCopied)),
+    );
   }
 }

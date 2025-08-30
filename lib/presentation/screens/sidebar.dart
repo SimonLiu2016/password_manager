@@ -16,6 +16,7 @@ import 'package:password_manager/data/models/password_entry.dart';
 import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:password_manager/presentation/screens/settings_screen.dart';
 import 'package:password_manager/presentation/screens/account_screen.dart';
+import 'package:password_manager/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 class Sidebar extends StatefulWidget {
@@ -29,108 +30,155 @@ class Sidebar extends StatefulWidget {
 }
 
 class _SidebarState extends State<Sidebar> {
-  String selectedCategory = '所有项目';
+  String selectedCategory = '所有项目'; // 这里暂时保持中文，后面会动态设置
   String? selectedTag; // 当前选中的标签
   bool _isCategoryExpanded = true; // 分类菜单展开状态
   bool _isTagExpanded = false; // 标签菜单展开状态（默认收起）
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 在这里设置默认值，确保本地化已加载
+    final l10n = AppLocalizations.of(context);
+    if (l10n != null && selectedCategory == '所有项目') {
+      selectedCategory = l10n.allItems;
+    }
+  }
+
   // 计算各分类的密码数量
-  Map<String, int> _calculateCounts(List<PasswordEntry> passwords) {
+  Map<String, int> _calculateCounts(
+    List<PasswordEntry> passwords,
+    AppLocalizations l10n,
+  ) {
     final counts = <String, int>{
-      '所有项目': passwords.length,
-      '收藏': passwords.where((p) => p.isFavorite).length, // 实现收藏数量统计
-      '登录信息': 0,
-      '信用卡': 0,
-      '身份标识': 0,
-      '服务器': 0,
-      '数据库': 0,
-      '安全设备': 0, // 修正为正确的类型名称
-      'WiFi密码': 0, // 修正为正确的类型名称
-      '安全笔记': 0,
-      '软件许可证': 0,
+      l10n.allItems: passwords.length,
+      l10n.favorites: passwords.where((p) => p.isFavorite).length, // 实现收藏数量统计
+      l10n.loginInfo: 0,
+      l10n.creditCard: 0,
+      l10n.identity: 0,
+      l10n.server: 0,
+      l10n.database: 0,
+      l10n.secureDevice: 0, // 修正为正确的类型名称
+      l10n.wifiPassword: 0, // 修正为正确的类型名称
+      l10n.secureNote: 0,
+      l10n.softwareLicense: 0,
     };
 
     for (final password in passwords) {
       final typeName = PasswordEntryTypeConfig.getName(password.type);
-      counts[typeName] = (counts[typeName] ?? 0) + 1;
+      // 根据类型名称映射到本地化的分类名称
+      final localizedTypeName = _getLocalizedTypeName(typeName, l10n);
+      counts[localizedTypeName] = (counts[localizedTypeName] ?? 0) + 1;
     }
 
     return counts;
   }
 
+  // 将类型名称映射到本地化的分类名称
+  String _getLocalizedTypeName(String typeName, AppLocalizations l10n) {
+    switch (typeName) {
+      case '登录信息':
+        return l10n.loginInfo;
+      case '信用卡':
+        return l10n.creditCard;
+      case '身份标识':
+        return l10n.identity;
+      case '服务器':
+        return l10n.server;
+      case '数据库':
+        return l10n.database;
+      case '安全设备':
+        return l10n.secureDevice;
+      case 'WiFi密码':
+        return l10n.wifiPassword;
+      case '安全笔记':
+        return l10n.secureNote;
+      case '软件许可证':
+        return l10n.softwareLicense;
+      default:
+        return typeName; // 返回原始名称作为默认值
+    }
+  }
+
   // 获取菜单项目（动态数量）
-  List<SidebarItem> _getMenuItems(Map<String, int> counts) {
+  List<SidebarItem> _getMenuItems(
+    Map<String, int> counts,
+    AppLocalizations l10n,
+  ) {
     return [
       SidebarItem(
         icon: Icons.all_inbox_rounded,
-        title: '所有项目',
-        count: counts['所有项目'] ?? 0,
+        title: l10n.allItems,
+        count: counts[l10n.allItems] ?? 0,
         color: AppTheme.primaryBlue,
       ),
       SidebarItem(
         icon: Icons.star_rounded,
-        title: '收藏',
-        count: counts['收藏'] ?? 0,
+        title: l10n.favorites,
+        count: counts[l10n.favorites] ?? 0,
         color: AppTheme.warning,
       ),
     ];
   }
 
   // 获取分类项目（动态数量）
-  List<SidebarItem> _getCategoryItems(Map<String, int> counts) {
+  List<SidebarItem> _getCategoryItems(
+    Map<String, int> counts,
+    AppLocalizations l10n,
+  ) {
     return [
       SidebarItem(
         icon: Icons.vpn_key_rounded,
-        title: '登录信息',
-        count: counts['登录信息'] ?? 0,
+        title: l10n.loginInfo,
+        count: counts[l10n.loginInfo] ?? 0,
         color: Color(0xFF4CAF50),
       ),
       SidebarItem(
         icon: Icons.credit_card_rounded,
-        title: '信用卡',
-        count: counts['信用卡'] ?? 0,
+        title: l10n.creditCard,
+        count: counts[l10n.creditCard] ?? 0,
         color: Color(0xFF9C27B0),
       ),
       SidebarItem(
         icon: Icons.badge_rounded,
-        title: '身份标识',
-        count: counts['身份标识'] ?? 0,
+        title: l10n.identity,
+        count: counts[l10n.identity] ?? 0,
         color: Color(0xFF00BCD4),
       ),
       SidebarItem(
         icon: Icons.dns_rounded,
-        title: '服务器',
-        count: counts['服务器'] ?? 0,
+        title: l10n.server,
+        count: counts[l10n.server] ?? 0,
         color: Color(0xFF795548),
       ),
       SidebarItem(
         icon: Icons.storage_rounded,
-        title: '数据库',
-        count: counts['数据库'] ?? 0,
+        title: l10n.database,
+        count: counts[l10n.database] ?? 0,
         color: Color(0xFF607D8B),
       ),
       SidebarItem(
         icon: Icons.security_rounded,
-        title: '安全设备',
-        count: counts['安全设备'] ?? 0,
+        title: l10n.secureDevice,
+        count: counts[l10n.secureDevice] ?? 0,
         color: Color(0xFF8BC34A),
       ),
       SidebarItem(
         icon: Icons.wifi_rounded,
-        title: 'WiFi密码',
-        count: counts['WiFi密码'] ?? 0,
+        title: l10n.wifiPassword,
+        count: counts[l10n.wifiPassword] ?? 0,
         color: Color(0xFF2196F3),
       ),
       SidebarItem(
         icon: Icons.sticky_note_2_rounded,
-        title: '安全笔记',
-        count: counts['安全笔记'] ?? 0,
+        title: l10n.secureNote,
+        count: counts[l10n.secureNote] ?? 0,
         color: Color(0xFFFF9800),
       ),
       SidebarItem(
         icon: Icons.key_rounded,
-        title: '软件许可证',
-        count: counts['软件许可证'] ?? 0,
+        title: l10n.softwareLicense,
+        count: counts[l10n.softwareLicense] ?? 0,
         color: Color(0xFF673AB7),
       ),
     ];
@@ -138,12 +186,14 @@ class _SidebarState extends State<Sidebar> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Consumer<PasswordProvider>(
       builder: (context, passwordProvider, child) {
         // 计算各分类数量
-        final counts = _calculateCounts(passwordProvider.passwords);
-        final menuItems = _getMenuItems(counts);
-        final categoryItems = _getCategoryItems(counts);
+        final counts = _calculateCounts(passwordProvider.passwords, l10n);
+        final menuItems = _getMenuItems(counts, l10n);
+        final categoryItems = _getCategoryItems(counts, l10n);
 
         return Container(
           width: 280,
@@ -179,7 +229,9 @@ class _SidebarState extends State<Sidebar> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryBlue.withOpacity(0.3),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.3),
                             blurRadius: 8,
                             offset: Offset(0, 4),
                           ),
@@ -221,18 +273,20 @@ class _SidebarState extends State<Sidebar> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'SecureVault',
+                          l10n.appTitle,
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                         ),
                         Text(
-                          'Password Manager',
+                          l10n.appSubtitle,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
-                                color: AppTheme.textSecondary,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                                 letterSpacing: 0.5,
                               ),
                         ),
@@ -260,9 +314,9 @@ class _SidebarState extends State<Sidebar> {
                         vertical: 8,
                       ),
                       child: Text(
-                        '主要',
+                        l10n.mainCategory,
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: AppTheme.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
@@ -275,13 +329,14 @@ class _SidebarState extends State<Sidebar> {
 
                     // 分类 - 可折叠标题
                     _buildCollapsibleHeader(
-                      title: '分类',
+                      title: l10n.categories,
                       isExpanded: _isCategoryExpanded,
                       onToggle: () {
                         setState(() {
                           _isCategoryExpanded = !_isCategoryExpanded;
                         });
                       },
+                      l10n: l10n,
                     ),
 
                     // 分类项目（只在展开状态下显示）
@@ -292,13 +347,14 @@ class _SidebarState extends State<Sidebar> {
 
                     // 标签 - 可折叠标题
                     _buildCollapsibleHeader(
-                      title: '标签',
+                      title: l10n.tags,
                       isExpanded: _isTagExpanded,
                       onToggle: () {
                         setState(() {
                           _isTagExpanded = !_isTagExpanded;
                         });
                       },
+                      l10n: l10n,
                     ),
 
                     // 标签项目（只在展开状态下显示）
@@ -325,7 +381,7 @@ class _SidebarState extends State<Sidebar> {
                   children: [
                     _buildBottomTile(
                       icon: Icons.settings_rounded,
-                      title: '设置',
+                      title: l10n.settings,
                       onTap: () {
                         // 导航到设置页面
                         Navigator.push(
@@ -338,7 +394,7 @@ class _SidebarState extends State<Sidebar> {
                     ),
                     _buildBottomTile(
                       icon: Icons.person_rounded,
-                      title: '我的账户',
+                      title: l10n.myAccount,
                       onTap: () {
                         // 导航到账户页面
                         Navigator.push(
@@ -371,6 +427,7 @@ class _SidebarState extends State<Sidebar> {
           onTap: () {
             setState(() {
               selectedCategory = item.title;
+              selectedTag = null; // 清除标签选择
             });
             // 通知父组件分类变更
             if (widget.onCategoryChanged != null) {
@@ -381,11 +438,15 @@ class _SidebarState extends State<Sidebar> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppTheme.primaryBlue.withOpacity(0.1)
+                  ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
               border: isSelected
-                  ? Border.all(color: AppTheme.primaryBlue.withOpacity(0.3))
+                  ? Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3),
+                    )
                   : null,
             ),
             child: Row(
@@ -411,8 +472,8 @@ class _SidebarState extends State<Sidebar> {
                     item.title,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: isSelected
-                          ? AppTheme.primaryBlue
-                          : AppTheme.textPrimary,
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface,
                       fontWeight: isSelected
                           ? FontWeight.w600
                           : FontWeight.w500,
@@ -427,8 +488,10 @@ class _SidebarState extends State<Sidebar> {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppTheme.primaryBlue
-                          : AppTheme.textSecondary.withOpacity(0.1),
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -436,7 +499,7 @@ class _SidebarState extends State<Sidebar> {
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
-                            : AppTheme.textSecondary,
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -463,12 +526,16 @@ class _SidebarState extends State<Sidebar> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
             children: [
-              Icon(icon, color: AppTheme.textSecondary, size: 22),
+              Icon(
+                icon,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: 22,
+              ),
               const SizedBox(width: 16),
               Text(
                 title,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -486,7 +553,7 @@ class _SidebarState extends State<Sidebar> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Text(
-            '暂无标签',
+            '暂无标签', // 这个可以保持中文，或者后续添加到本地化文件
             style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
           ),
         ),
@@ -510,7 +577,9 @@ class _SidebarState extends State<Sidebar> {
             setState(() {
               // 如果点击已选中的标签，则取消选择
               selectedTag = selectedTag == tag ? null : tag;
-              selectedCategory = '所有项目'; // 重置分类选择
+              selectedCategory = AppLocalizations.of(
+                context,
+              )!.allItems; // 重置分类选择
             });
 
             // 通知父组件标签选择变更
@@ -522,11 +591,15 @@ class _SidebarState extends State<Sidebar> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppTheme.primaryBlue.withOpacity(0.1)
+                  ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
               border: isSelected
-                  ? Border.all(color: AppTheme.primaryBlue.withOpacity(0.3))
+                  ? Border.all(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3),
+                    )
                   : null,
             ),
             child: Row(
@@ -536,13 +609,17 @@ class _SidebarState extends State<Sidebar> {
                   height: 36,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppTheme.primaryBlue
-                        : AppTheme.textSecondary.withOpacity(0.1),
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.label_rounded,
-                    color: isSelected ? Colors.white : AppTheme.textSecondary,
+                    color: isSelected
+                        ? Colors.white
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                     size: 20,
                   ),
                 ),
@@ -552,8 +629,8 @@ class _SidebarState extends State<Sidebar> {
                     tag,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: isSelected
-                          ? AppTheme.primaryBlue
-                          : AppTheme.textPrimary,
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface,
                       fontWeight: isSelected
                           ? FontWeight.w600
                           : FontWeight.w500,
@@ -570,8 +647,10 @@ class _SidebarState extends State<Sidebar> {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppTheme.primaryBlue
-                          : AppTheme.textSecondary.withOpacity(0.1),
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -579,7 +658,7 @@ class _SidebarState extends State<Sidebar> {
                       style: TextStyle(
                         color: isSelected
                             ? Colors.white
-                            : AppTheme.textSecondary,
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -598,6 +677,7 @@ class _SidebarState extends State<Sidebar> {
     required String title,
     required bool isExpanded,
     required VoidCallback onToggle,
+    AppLocalizations? l10n,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -616,14 +696,14 @@ class _SidebarState extends State<Sidebar> {
                   child: Icon(
                     Icons.chevron_right_rounded,
                     size: 18,
-                    color: AppTheme.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   title,
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: AppTheme.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
@@ -632,9 +712,13 @@ class _SidebarState extends State<Sidebar> {
                 const Spacer(),
                 // 显示展开/收起状态的提示
                 Text(
-                  isExpanded ? '收起' : '展开',
+                  isExpanded
+                      ? (l10n?.collapse ?? '收起')
+                      : (l10n?.expand ?? '展开'),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textSecondary.withOpacity(0.7),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withOpacity(0.7),
                     fontSize: 10,
                   ),
                 ),

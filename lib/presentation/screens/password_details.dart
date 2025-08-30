@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:password_manager/presentation/screens/password_generator.dart';
 import 'package:provider/provider.dart';
+import 'package:password_manager/l10n/app_localizations.dart';
 
 class PasswordDetails extends StatefulWidget {
   final PasswordEntry? selectedPassword;
@@ -169,9 +170,9 @@ class _PasswordDetailsState extends State<PasswordDetails> {
 
   void _copyToClipboard(String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('$label 已复制到剪贴板')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.copied(label))),
+    );
   }
 
   void _savePassword() {
@@ -207,9 +208,11 @@ class _PasswordDetailsState extends State<PasswordDetails> {
       if (updatedPassword != null) {
         provider.savePassword(updatedPassword).then((_) {
           print('密码保存完成');
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('密码已保存')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.passwordSaved),
+            ),
+          );
         });
       }
     }
@@ -221,13 +224,15 @@ class _PasswordDetailsState extends State<PasswordDetails> {
     final provider = Provider.of<PasswordProvider>(context, listen: false);
     if (widget.selectedPassword != null) {
       provider.toggleFavorite(widget.selectedPassword!.id).then((_) {
-        final action = widget.selectedPassword!.isFavorite ? '取消收藏' : '添加到收藏';
+        final action = widget.selectedPassword!.isFavorite
+            ? AppLocalizations.of(context)!.removedFromFavorites
+            : AppLocalizations.of(context)!.addedToFavorites;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('已$action'),
+            content: Text(action),
             backgroundColor: widget.selectedPassword!.isFavorite
-                ? AppTheme.success
-                : AppTheme.warning,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.secondary,
           ),
         );
       });
@@ -239,9 +244,11 @@ class _PasswordDetailsState extends State<PasswordDetails> {
       final provider = Provider.of<PasswordProvider>(context, listen: false);
 
       provider.deletePassword(widget.selectedPassword!.id).then((_) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('密码已删除')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.passwordDeleted),
+          ),
+        );
         // 清空控制器文本
         _initControllers();
       });
@@ -259,35 +266,42 @@ class _PasswordDetailsState extends State<PasswordDetails> {
           ),
           title: Row(
             children: [
-              Icon(Icons.warning_rounded, color: AppTheme.warning, size: 24),
+              Icon(
+                Icons.warning_rounded,
+                color: Theme.of(context).colorScheme.error,
+                size: 24,
+              ),
               SizedBox(width: 12),
               Text(
-                '确认删除',
+                AppLocalizations.of(context)!.confirmDelete,
                 style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
           content: Text(
-            '您确定要删除这个密码条目吗？此操作不可撤销。',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+            AppLocalizations.of(context)!.deleteConfirmMessage,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 16,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                '取消',
+                AppLocalizations.of(context)!.cancel,
                 style: TextStyle(
-                  color: AppTheme.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
             Container(
               decoration: BoxDecoration(
-                color: AppTheme.error,
+                color: Theme.of(context).colorScheme.error,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextButton(
@@ -296,7 +310,7 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                   _deletePassword();
                 },
                 child: Text(
-                  '删除',
+                  AppLocalizations.of(context)!.delete,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -539,10 +553,10 @@ class _PasswordDetailsState extends State<PasswordDetails> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '标签',
+          AppLocalizations.of(context)!.tags,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -551,8 +565,8 @@ class _PasswordDetailsState extends State<PasswordDetails> {
             Expanded(
               child: TextFormField(
                 controller: _tagController,
-                decoration: const InputDecoration(
-                  hintText: '添加标签...',
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.addTag,
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.label),
                 ),
@@ -564,7 +578,7 @@ class _PasswordDetailsState extends State<PasswordDetails> {
               onPressed: _addTag,
               icon: const Icon(Icons.add),
               style: IconButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Colors.white,
               ),
             ),
@@ -581,8 +595,10 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                     label: Text(tag),
                     deleteIcon: const Icon(Icons.close, size: 18),
                     onDeleted: () => _removeTag(tag),
-                    backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
-                    deleteIconColor: AppTheme.primaryBlue,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
+                    deleteIconColor: Theme.of(context).colorScheme.primary,
                   ),
                 )
                 .toList(),
@@ -669,10 +685,44 @@ class _PasswordDetailsState extends State<PasswordDetails> {
     }
   }
 
+  // 获取本地化的类型名称
+  String _getLocalizedTypeName(PasswordEntryType type, AppLocalizations l10n) {
+    switch (type) {
+      case PasswordEntryType.login:
+        return l10n.loginInfo;
+      case PasswordEntryType.creditCard:
+        return l10n.creditCard;
+      case PasswordEntryType.identity:
+        return l10n.identity;
+      case PasswordEntryType.server:
+        return l10n.server;
+      case PasswordEntryType.database:
+        return l10n.database;
+      case PasswordEntryType.device:
+        return l10n.secureDevice;
+      case PasswordEntryType.wifi:
+        return l10n.wifiPassword;
+      case PasswordEntryType.secureNote:
+        return l10n.secureNote;
+      case PasswordEntryType.license:
+        return l10n.softwareLicense;
+      default:
+        return PasswordEntryTypeConfig.getName(type); // 降级到中文名称
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.selectedPassword == null) {
-      return const Center(child: Text('请选择一个密码条目查看详情'));
+      return Center(
+        child: Text(
+          AppLocalizations.of(context)!.noPasswordSelected,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 16,
+          ),
+        ),
+      );
     }
 
     return DefaultTabController(
@@ -681,10 +731,10 @@ class _PasswordDetailsState extends State<PasswordDetails> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            const TabBar(
+            TabBar(
               tabs: [
-                Tab(text: '详情'),
-                Tab(text: '密码生成器'),
+                Tab(text: AppLocalizations.of(context)!.details),
+                Tab(text: AppLocalizations.of(context)!.passwordGenerator),
               ],
             ),
             const SizedBox(height: 16),
@@ -736,8 +786,9 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                                 ),
                                 const SizedBox(width: 12),
                                 Text(
-                                  PasswordEntryTypeConfig.getName(
+                                  _getLocalizedTypeName(
                                     widget.selectedPassword!.type,
+                                    AppLocalizations.of(context)!,
                                   ),
                                   style: TextStyle(
                                     color: Color(
@@ -757,14 +808,16 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                           // 标题字段
                           TextFormField(
                             controller: _titleController,
-                            decoration: const InputDecoration(
-                              labelText: '标题',
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.title,
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.title),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return '请输入标题';
+                                return AppLocalizations.of(
+                                  context,
+                                )!.titleRequired;
                               }
                               return null;
                             },
@@ -773,11 +826,13 @@ class _PasswordDetailsState extends State<PasswordDetails> {
 
                           // 动态字段部分
                           Text(
-                            '基本信息',
+                            AppLocalizations.of(context)!.basicInfo,
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.w600,
-                                  color: AppTheme.textPrimary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                 ),
                           ),
                           const SizedBox(height: 16),
@@ -797,12 +852,14 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                           // 备注
                           TextFormField(
                             controller: _notesController,
-                            decoration: const InputDecoration(
-                              labelText: '备注',
+                            decoration: InputDecoration(
+                              labelText: AppLocalizations.of(context)!.notes,
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.note),
                               alignLabelWithHint: true,
-                              hintText: '添加额外信息（如安全问题答案）',
+                              hintText: AppLocalizations.of(
+                                context,
+                              )!.notesPlaceholder,
                             ),
                             maxLines: 3,
                           ),
@@ -813,12 +870,12 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                             width: double.infinity,
                             height: 56,
                             decoration: BoxDecoration(
-                              color: AppTheme.surface,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: widget.selectedPassword!.isFavorite
-                                    ? AppTheme.warning
-                                    : AppTheme.divider,
+                                    ? Theme.of(context).colorScheme.secondary
+                                    : Theme.of(context).dividerColor,
                                 width: 2,
                               ),
                             ),
@@ -835,20 +892,32 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                                           ? Icons.star_rounded
                                           : Icons.star_border_rounded,
                                       color: widget.selectedPassword!.isFavorite
-                                          ? AppTheme.warning
-                                          : AppTheme.textSecondary,
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.secondary
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
                                       size: 20,
                                     ),
                                     SizedBox(width: 8),
                                     Text(
                                       widget.selectedPassword!.isFavorite
-                                          ? '取消收藏'
-                                          : '添加到收藏',
+                                          ? AppLocalizations.of(
+                                              context,
+                                            )!.removeFromFavorites
+                                          : AppLocalizations.of(
+                                              context,
+                                            )!.addToFavorites,
                                       style: TextStyle(
                                         color:
                                             widget.selectedPassword!.isFavorite
-                                            ? AppTheme.warning
-                                            : AppTheme.textSecondary,
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.secondary
+                                            : Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -880,7 +949,7 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                                     ),
                                     SizedBox(width: 8),
                                     Text(
-                                      '保存更改',
+                                      AppLocalizations.of(context)!.saveChanges,
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 16,
@@ -898,10 +967,10 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                             width: double.infinity,
                             height: 56,
                             decoration: BoxDecoration(
-                              color: AppTheme.surface,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppTheme.error,
+                                color: Theme.of(context).colorScheme.error,
                                 width: 2,
                               ),
                             ),
@@ -915,14 +984,20 @@ class _PasswordDetailsState extends State<PasswordDetails> {
                                   children: [
                                     Icon(
                                       Icons.delete_rounded,
-                                      color: AppTheme.error,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.error,
                                       size: 20,
                                     ),
                                     SizedBox(width: 8),
                                     Text(
-                                      '删除密码',
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.deletePassword,
                                       style: TextStyle(
-                                        color: AppTheme.error,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.error,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                       ),

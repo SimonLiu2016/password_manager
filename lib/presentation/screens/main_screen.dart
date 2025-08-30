@@ -19,6 +19,7 @@ import 'package:password_manager/presentation/screens/add_password_screen.dart';
 import 'package:password_manager/data/models/password_entry.dart';
 import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:password_manager/l10n/app_localizations.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -140,7 +141,7 @@ class _MainScreenState extends State<MainScreen> {
         }
 
         return Scaffold(
-          backgroundColor: AppTheme.background,
+          backgroundColor: Theme.of(context).colorScheme.background,
           body: Row(
             children: [
               // 侧边栏
@@ -180,12 +181,14 @@ class _MainScreenState extends State<MainScreen> {
                             child: Container(
                               height: 48,
                               decoration: BoxDecoration(
-                                color: AppTheme.background,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surfaceVariant,
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
                                   color: _isSearchFocused
-                                      ? AppTheme.primaryBlue
-                                      : AppTheme.divider,
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).dividerColor,
                                   width: _isSearchFocused ? 2 : 1,
                                 ),
                               ),
@@ -199,26 +202,37 @@ class _MainScreenState extends State<MainScreen> {
                                   controller: _searchController,
                                   onChanged: _onSearchChanged,
                                   decoration: InputDecoration(
-                                    hintText: '🔍 搜索密码、用户名或网站...',
+                                    hintText: AppLocalizations.of(
+                                      context,
+                                    )!.searchPlaceholder,
                                     hintStyle: TextStyle(
-                                      color: AppTheme.textSecondary,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                                       fontSize: 15,
                                     ),
                                     prefixIcon: Container(
                                       margin: EdgeInsets.all(12),
                                       decoration: BoxDecoration(
                                         color: _isSearchFocused
-                                            ? AppTheme.primaryBlue.withOpacity(
-                                                0.1,
-                                              )
-                                            : AppTheme.divider.withOpacity(0.5),
+                                            ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                                  .withOpacity(0.1)
+                                            : Theme.of(
+                                                context,
+                                              ).dividerColor.withOpacity(0.5),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Icon(
                                         Icons.search_rounded,
                                         color: _isSearchFocused
-                                            ? AppTheme.primaryBlue
-                                            : AppTheme.textSecondary,
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
                                         size: 20,
                                       ),
                                     ),
@@ -226,7 +240,9 @@ class _MainScreenState extends State<MainScreen> {
                                         ? IconButton(
                                             icon: Icon(
                                               Icons.clear_rounded,
-                                              color: AppTheme.textSecondary,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
                                               size: 20,
                                             ),
                                             onPressed: () {
@@ -255,7 +271,9 @@ class _MainScreenState extends State<MainScreen> {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primaryBlue.withOpacity(0.3),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withOpacity(0.3),
                                   blurRadius: 8,
                                   offset: Offset(0, 4),
                                 ),
@@ -307,7 +325,9 @@ class _MainScreenState extends State<MainScreen> {
                                       ),
                                       SizedBox(width: 8),
                                       Text(
-                                        '添加密码',
+                                        AppLocalizations.of(
+                                          context,
+                                        )!.addPassword,
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.w600,
@@ -350,7 +370,7 @@ class _MainScreenState extends State<MainScreen> {
                           Expanded(
                             flex: 5,
                             child: Container(
-                              color: AppTheme.background,
+                              color: Theme.of(context).colorScheme.background,
                               child: PasswordDetails(
                                 selectedPassword: _selectedPassword,
                               ),

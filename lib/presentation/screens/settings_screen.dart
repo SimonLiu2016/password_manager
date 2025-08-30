@@ -14,6 +14,9 @@
 import 'package:flutter/material.dart';
 import 'package:password_manager/app/app_theme.dart';
 import 'package:password_manager/presentation/providers/auth_provider.dart';
+import 'package:password_manager/main.dart';
+import 'package:password_manager/utils/helpers/language_manager.dart';
+import 'package:password_manager/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -78,20 +81,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         title: Text(
-          '设置',
+          l10n.settings,
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -101,31 +109,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 安全设置
-            _buildSectionHeader('安全设置'),
+            _buildSectionHeader(l10n.securitySettings),
             _buildSecuritySettings(),
 
             SizedBox(height: 24),
 
             // 界面设置
-            _buildSectionHeader('界面设置'),
+            _buildSectionHeader(l10n.interfaceSettings),
             _buildInterfaceSettings(),
 
             SizedBox(height: 24),
 
             // 通知设置
-            _buildSectionHeader('通知设置'),
+            _buildSectionHeader(l10n.notificationSettings),
             _buildNotificationSettings(),
 
             SizedBox(height: 24),
 
             // 数据管理
-            _buildSectionHeader('数据管理'),
+            _buildSectionHeader(l10n.dataManagement),
             _buildDataManagement(),
 
             SizedBox(height: 24),
 
             // 关于
-            _buildSectionHeader('关于'),
+            _buildSectionHeader(l10n.about),
             _buildAboutSection(),
           ],
         ),
@@ -142,7 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: AppTheme.textPrimary,
+          color: Theme.of(context).colorScheme.onBackground,
         ),
       ),
     );
@@ -150,6 +158,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // 构建安全设置
   Widget _buildSecuritySettings() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -167,15 +177,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // 自动锁定时间
           _buildSettingsTile(
             icon: Icons.lock_rounded,
-            title: '自动锁定时间',
-            subtitle: '$_autoLockTime 分钟无操作后自动锁定',
+            title: l10n.autoLockTime,
+            subtitle: l10n.autoLockSubtitle(_autoLockTime),
             trailing: DropdownButton<int>(
               value: _autoLockTime,
               items: [1, 3, 5, 10, 15, 30]
                   .map(
                     (value) => DropdownMenuItem(
                       value: value,
-                      child: Text('$value 分钟'),
+                      child: Text(l10n.minutesShort(value)),
                     ),
                   )
                   .toList(),
@@ -190,13 +200,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
 
-          Divider(height: 1, color: AppTheme.divider),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
 
           // 生物识别认证
           _buildSettingsTile(
             icon: Icons.fingerprint_rounded,
-            title: '生物识别认证',
-            subtitle: '使用指纹或面部识别解锁应用',
+            title: l10n.biometricAuth,
+            subtitle: l10n.biometricAuthSubtitle,
             trailing: Switch(
               value: _biometricAuth,
               onChanged: (value) async {
@@ -210,8 +220,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (!isAvailable && value) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('设备不支持生物识别认证'),
-                      backgroundColor: AppTheme.error,
+                      content: Text(l10n.biometricNotSupported),
+                      backgroundColor: Theme.of(context).colorScheme.error,
                     ),
                   );
                   return;
@@ -222,7 +232,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
                 _saveSettings();
               },
-              activeColor: AppTheme.primaryBlue,
+              activeColor: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
@@ -232,6 +242,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // 构建界面设置
   Widget _buildInterfaceSettings() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -249,13 +261,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // 主题设置
           _buildSettingsTile(
             icon: Icons.palette_rounded,
-            title: '主题',
+            title: l10n.theme,
             subtitle: _getThemeName(_selectedTheme),
             trailing: DropdownButton<String>(
               value: _selectedTheme,
               items: [
-                DropdownMenuItem(value: 'light', child: Text('浅色')),
-                DropdownMenuItem(value: 'dark', child: Text('深色')),
+                DropdownMenuItem(value: 'light', child: Text(l10n.lightTheme)),
+                DropdownMenuItem(value: 'dark', child: Text(l10n.darkTheme)),
               ],
               onChanged: (value) {
                 if (value != null) {
@@ -263,47 +275,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _selectedTheme = value;
                   });
                   _saveSettings();
+
+                  // 通知主应用重新加载设置以应用主题
+                  MyAppWrapper.reloadSettings(context);
                 }
               },
             ),
           ),
 
-          Divider(height: 1, color: AppTheme.divider),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
 
           // 语言设置
           _buildSettingsTile(
             icon: Icons.language_rounded,
-            title: '语言',
+            title: l10n.language,
             subtitle: _getLanguageName(_selectedLanguage),
             trailing: DropdownButton<String>(
               value: _selectedLanguage,
               items: [
-                DropdownMenuItem(value: 'zh', child: Text('中文')),
-                DropdownMenuItem(value: 'en', child: Text('English')),
+                DropdownMenuItem(value: 'zh', child: Text(l10n.chinese)),
+                DropdownMenuItem(value: 'en', child: Text(l10n.english)),
               ],
-              onChanged: (value) {
-                if (value != null) {
+              onChanged: (value) async {
+                if (value != null && value != _selectedLanguage) {
                   setState(() {
                     _selectedLanguage = value;
                   });
-                  _saveSettings();
+                  await _saveSettings();
+
+                  // 更新语言管理器
+                  if (mounted) {
+                    final languageManager = Provider.of<LanguageManager>(
+                      context,
+                      listen: false,
+                    );
+                    await languageManager.changeLanguage(value);
+                  }
                 }
               },
             ),
           ),
 
-          Divider(height: 1, color: AppTheme.divider),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
 
           // 视图模式
           _buildSettingsTile(
             icon: Icons.view_list_rounded,
-            title: '密码列表视图',
+            title: l10n.passwordListView,
             subtitle: _getViewModeName(_viewMode),
             trailing: DropdownButton<String>(
               value: _viewMode,
               items: [
-                DropdownMenuItem(value: 'list', child: Text('列表')),
-                DropdownMenuItem(value: 'grid', child: Text('网格')),
+                DropdownMenuItem(value: 'list', child: Text(l10n.listView)),
+                DropdownMenuItem(value: 'grid', child: Text(l10n.gridView)),
               ],
               onChanged: (value) {
                 if (value != null) {
@@ -322,6 +346,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // 构建通知设置
   Widget _buildNotificationSettings() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -339,8 +365,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // 密码到期提醒
           _buildSettingsTile(
             icon: Icons.event_rounded,
-            title: '密码到期提醒',
-            subtitle: '定期提醒您更新重要密码',
+            title: l10n.passwordExpiryReminder,
+            subtitle: l10n.passwordExpirySubtitle,
             trailing: Switch(
               value: _passwordExpiryNotification,
               onChanged: (value) {
@@ -349,17 +375,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
                 _saveSettings();
               },
-              activeColor: AppTheme.primaryBlue,
+              activeColor: Theme.of(context).colorScheme.primary,
             ),
           ),
 
-          Divider(height: 1, color: AppTheme.divider),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
 
           // 安全提醒
           _buildSettingsTile(
             icon: Icons.security_rounded,
-            title: '安全提醒',
-            subtitle: '接收安全相关的通知和建议',
+            title: l10n.securityAlerts,
+            subtitle: l10n.securityAlertsSubtitle,
             trailing: Switch(
               value: _securityAlerts,
               onChanged: (value) {
@@ -368,7 +394,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
                 _saveSettings();
               },
-              activeColor: AppTheme.primaryBlue,
+              activeColor: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
@@ -378,6 +404,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // 构建数据管理
   Widget _buildDataManagement() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -395,84 +423,84 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // 数据备份
           _buildSettingsTile(
             icon: Icons.backup_rounded,
-            title: '数据备份',
-            subtitle: '创建本地备份文件',
+            title: l10n.dataBackup,
+            subtitle: l10n.dataBackupSubtitle,
             trailing: Icon(
               Icons.arrow_forward_ios_rounded,
               size: 16,
-              color: AppTheme.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('备份功能将在后续版本中实现'),
-                  backgroundColor: AppTheme.primaryBlue,
+                  content: Text(l10n.backupFeatureComingSoon),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               );
             },
           ),
 
-          Divider(height: 1, color: AppTheme.divider),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
 
           // 数据恢复
           _buildSettingsTile(
             icon: Icons.restore_rounded,
-            title: '数据恢复',
-            subtitle: '从备份文件恢复数据',
+            title: l10n.dataRestore,
+            subtitle: l10n.dataRestoreSubtitle,
             trailing: Icon(
               Icons.arrow_forward_ios_rounded,
               size: 16,
-              color: AppTheme.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('恢复功能将在后续版本中实现'),
-                  backgroundColor: AppTheme.primaryBlue,
+                  content: Text(l10n.restoreFeatureComingSoon),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               );
             },
           ),
 
-          Divider(height: 1, color: AppTheme.divider),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
 
           // 数据导出
           _buildSettingsTile(
             icon: Icons.download_rounded,
-            title: '导出数据',
-            subtitle: '导出为加密文件',
+            title: l10n.dataExport,
+            subtitle: l10n.dataExportSubtitle,
             trailing: Icon(
               Icons.arrow_forward_ios_rounded,
               size: 16,
-              color: AppTheme.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('导出功能将在后续版本中实现'),
-                  backgroundColor: AppTheme.primaryBlue,
+                  content: Text(l10n.exportFeatureComingSoon),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               );
             },
           ),
 
-          Divider(height: 1, color: AppTheme.divider),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
 
           // 数据导入
           _buildSettingsTile(
             icon: Icons.upload_rounded,
-            title: '导入数据',
-            subtitle: '从文件导入密码数据',
+            title: l10n.dataImport,
+            subtitle: l10n.dataImportSubtitle,
             trailing: Icon(
               Icons.arrow_forward_ios_rounded,
               size: 16,
-              color: AppTheme.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('导入功能将在后续版本中实现'),
-                  backgroundColor: AppTheme.primaryBlue,
+                  content: Text(l10n.importFeatureComingSoon),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
               );
             },
@@ -484,6 +512,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // 构建关于部分
   Widget _buildAboutSection() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -501,8 +531,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // 版本信息
           _buildSettingsTile(
             icon: Icons.info_rounded,
-            title: '版本信息',
-            subtitle: 'SecureVault v1.0.0',
+            title: l10n.versionInfo,
+            subtitle: l10n.versionSubtitle,
             onTap: () {
               // 显示详细版本信息
               showDialog(
@@ -513,9 +543,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     title: Text(
-                      '关于 SecureVault',
+                      l10n.aboutSecureVault,
                       style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -523,34 +553,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildInfoRow('版本', 'v1.0.0'),
-                        _buildInfoRow('开发者', 'V8EN'),
-                        _buildInfoRow('作者', 'Simon'),
-                        _buildInfoRow('联系方式', '582883825@qq.com'),
+                        _buildInfoRow(l10n.version, 'v1.0.0'),
+                        _buildInfoRow(l10n.developer, 'V8EN'),
+                        _buildInfoRow(l10n.author, 'Simon'),
+                        _buildInfoRow(l10n.contact, '582883825@qq.com'),
                         SizedBox(height: 16),
                         Container(
                           padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryBlue.withOpacity(0.1),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: AppTheme.primaryBlue.withOpacity(0.3),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.3),
                             ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Copyright © 2024 V8EN',
+                                l10n.copyrightInfo,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryBlue,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
                               Text(
-                                '保留所有权利',
+                                l10n.allRightsReserved,
                                 style: TextStyle(
-                                  color: AppTheme.textSecondary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                                   fontSize: 12,
                                 ),
                               ),
@@ -562,7 +598,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: Text('确定'),
+                        child: Text(l10n.ok),
                       ),
                     ],
                   );
@@ -586,14 +622,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             width: 70,
             child: Text(
               '$label:',
-              style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
             ),
           ),
           Expanded(
             child: Text(
               value,
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -628,10 +667,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue.withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: AppTheme.primaryBlue, size: 20),
+                child: Icon(
+                  icon,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20,
+                ),
               ),
               SizedBox(width: 16),
               Expanded(
@@ -641,7 +684,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Text(
                       title,
                       style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
                       ),
@@ -650,7 +693,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 13,
                       ),
                     ),
@@ -667,31 +710,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // 获取主题名称
   String _getThemeName(String theme) {
+    final l10n = AppLocalizations.of(context)!;
     switch (theme) {
       case 'dark':
-        return '深色';
+        return l10n.darkTheme;
       default:
-        return '浅色';
+        return l10n.lightTheme;
     }
   }
 
   // 获取语言名称
   String _getLanguageName(String language) {
+    final l10n = AppLocalizations.of(context)!;
     switch (language) {
       case 'en':
-        return 'English';
+        return l10n.english;
       default:
-        return '中文';
+        return l10n.chinese;
     }
   }
 
   // 获取视图模式名称
   String _getViewModeName(String mode) {
+    final l10n = AppLocalizations.of(context)!;
     switch (mode) {
       case 'grid':
-        return '网格';
+        return l10n.gridView;
       default:
-        return '列表';
+        return l10n.listView;
     }
   }
 }

@@ -1,0 +1,277 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2024-08-29T12:00:00.000Z",
+  
+  "appTitle": "SecureVault",
+  "appSubtitle": "Password Manager",
+  
+  "settings": "Settings",
+  "myAccount": "My Account",
+  "mainCategory": "Main",
+  "tags": "Tags",
+  "collapse": "Collapse",
+  "expand": "Expand",
+  
+  "allItems": "All Items",
+  "favorites": "Favorites",
+  "loginInfo": "Login Info",
+  "creditCard": "Credit Card",
+  "identity": "Identity",
+  "server": "Server",
+  "database": "Database",
+  "secureDevice": "Secure Device",
+  "wifiPassword": "WiFi Password",
+  "secureNote": "Secure Note",
+  "softwareLicense": "Software License",
+  
+  "securitySettings": "Security Settings",
+  "autoLockTime": "Auto Lock Time",
+  "autoLockSubtitle": "Lock automatically after {minutes} minutes of inactivity",
+  "@autoLockSubtitle": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "biometricAuth": "Biometric Authentication",
+  "biometricAuthSubtitle": "Use fingerprint or face recognition to unlock the app",
+  "biometricNotSupported": "Device does not support biometric authentication",
+  
+  "interfaceSettings": "Interface Settings",
+  "theme": "Theme",
+  "language": "Language",
+  "passwordListView": "Password List View",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+  "chinese": "中文",
+  "english": "English",
+  "listView": "List",
+  "gridView": "Grid",
+  
+  "notificationSettings": "Notification Settings",
+  "passwordExpiryReminder": "Password Expiry Reminder",
+  "passwordExpirySubtitle": "Regularly remind you to update important passwords",
+  "securityAlerts": "Security Alerts",
+  "securityAlertsSubtitle": "Receive security-related notifications and suggestions",
+  
+  "dataManagement": "Data Management",
+  "dataBackup": "Data Backup",
+  "dataBackupSubtitle": "Create local backup files",
+  "dataRestore": "Data Restore",
+  "dataRestoreSubtitle": "Restore data from backup files",
+  "dataExport": "Data Export",
+  "dataExportSubtitle": "Export as encrypted file",
+  "dataImport": "Data Import",
+  "dataImportSubtitle": "Import password data from file",
+  "backupFeatureComingSoon": "Backup feature will be implemented in future versions",
+  "restoreFeatureComingSoon": "Restore feature will be implemented in future versions",
+  "exportFeatureComingSoon": "Export feature will be implemented in future versions",
+  "importFeatureComingSoon": "Import feature will be implemented in future versions",
+  
+  "about": "About",
+  "versionInfo": "Version Info",
+  "versionSubtitle": "SecureVault v1.0.0",
+  "aboutSecureVault": "About SecureVault",
+  "version": "Version",
+  "developer": "Developer",
+  "author": "Author",
+  "contact": "Contact",
+  "website": "Website",
+  "copyrightInfo": "Copyright © 2024 V8EN",
+  "allRightsReserved": "All rights reserved",
+  "ok": "OK",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "save": "Save",
+  "confirm": "Confirm",
+  
+  "searchPlaceholder": "🔍 Search passwords, usernames or websites...",
+  "addPassword": "Add Password",
+  "noPasswordSelected": "Please select a password entry to view details",
+  "noPasswords": "No password entries yet",
+  "noPasswordsSubtitle": "Click the blue \"Add Password\" button above to create your first password entry",
+  "noSearchResults": "No matching passwords found",
+  "noSearchResultsSubtitle": "Try using different keywords or check if the spelling is correct",
+  "foundResults": "Found {count} results",
+  "@foundResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tagItems": "Tag \"{tag}\": {count} items",
+  "@tagItems": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "categoryItems": "{category}: {count} items",
+  "@categoryItems": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "details": "Details",
+  "passwordGenerator": "Password Generator",
+  "basicInfo": "Basic Information",
+  "title": "Title",
+  "titleRequired": "Please enter title",
+  "notes": "Notes",
+  "notesPlaceholder": "Add additional information (such as security question answers)",
+  "addTag": "Add tag...",
+  "addToFavorites": "Add to Favorites",
+  "removeFromFavorites": "Remove from Favorites",
+  "saveChanges": "Save Changes",
+  "deletePassword": "Delete Password",
+  "confirmDelete": "Confirm Delete",
+  "deleteConfirmMessage": "Are you sure you want to delete this password entry? This action cannot be undone.",
+  "passwordSaved": "Password saved",
+  "passwordDeleted": "Password deleted",
+  "addedToFavorites": "Added to favorites",
+  "removedFromFavorites": "Removed from favorites",
+  
+  "username": "Username",
+  "password": "Password",
+  "email": "Email",
+  "url": "URL",
+  "phone": "Phone",
+  "cardNumber": "Card Number",
+  "serverAddress": "Server Address",
+  "databaseName": "Database Name",
+  "deviceName": "Device Name",
+  "ssid": "SSID",
+  "productName": "Product Name",
+  "noUsername": "No username",
+  "copied": "{field} copied to clipboard",
+  "@copied": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "lock": "Lock",
+  "preferences": "Preferences",
+  "openSecureVault": "Open Secure Vault",
+  "aboutV8EN": "About V8EN",
+  "completeExit": "Complete Exit",
+  
+  "minutes": "minutes",
+  "minute": "minute",
+  "minutesShort": "{count} min",
+  "@minutesShort": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "pleaseEnter": "Please enter {field}",
+  "@pleaseEnter": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "pleaseSelect": "Please select {field}",
+  "@pleaseSelect": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "categories": "Categories",
+  
+  "passwordGeneratorTitle": "Password Generator",
+  "passwordLength": "Password Length",
+  "includeUppercase": "Include Uppercase Letters (A-Z)",
+  "includeLowercase": "Include Lowercase Letters (a-z)",
+  "includeNumbers": "Include Numbers (0-9)",
+  "includeSymbols": "Include Special Characters (!@#$ etc.)",
+  "regenerate": "Regenerate",
+  "usePassword": "Use This Password",
+  "passwordCopied": "Password copied to clipboard",
+  
+  "addPasswordTitle": "Add {type}",
+  "@addPasswordTitle": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "selectType": "Select Type",
+  "contentCopied": "Content copied to clipboard",
+  "newPasswordAdded": "New password added",
+  
+  "helpTitleExample": "e.g.: GitHub, NetEase Email, Company Server",
+  "helpEmailExample": "e.g.: user@example.com",
+  "helpUrlExample": "e.g.: https://example.com",
+  "helpPhoneExample": "e.g.: 138-0013-8000 or 13800138000",
+  "helpDateFormat": "Format: YYYY-MM-DD",
+  "helpPasswordLength": "Password length at least 4 characters",
+  "helpTagInput": "Enter tag name",
+  
+  "helpPortNumber": "Port: 1-65535",
+  "helpSecurityCode": "Credit card security code: 3-4 digits",
+  "helpPinCode": "PIN: usually 4-8 digits",
+  "helpPostalCode": "Postal code: e.g. 100000",
+  "helpExpiryMonth": "Expiry month: 1-12",
+  "helpExpiryYear": "Expiry year: e.g. 2025",
+  "helpEnterNumber": "Please enter a number",
+  
+  "helpCardNumber": "Card number: spaces allowed",
+  "helpIdNumber": "ID number: 15 or 18 digits",
+  "helpLicenseKey": "License/Serial number: at least 8 characters",
+  "helpUsername": "Username: 2-50 characters",
+  "helpSsid": "WiFi network name",
+  "helpServerAddress": "Server address or IP",
+  "helpDatabaseName": "Database name",
+  "helpDeviceName": "Device name or model",
+  "helpProductName": "Software/Product name",
+  "helpCompanyName": "Company or organization name",
+  "helpHolderName": "Cardholder name",
+  
+  "validationPasswordLength": "Password length cannot be less than 4 characters",
+  "validationEmailFormat": "Please enter a valid email address",
+  "validationUrlFormat": "Please enter a valid URL (starting with http:// or https://)",
+  "validationPhoneFormat": "Please enter a valid phone number (7-15 digits)",
+  "validationChinesePhone": "Please enter a valid Chinese mobile number",
+  "validationNumberFormat": "Please enter a valid number",
+  "validationPortRange": "Port number must be between 1-65535",
+  "validationSecurityCodeLength": "Security code must be 3-4 digits",
+  "validationPinLength": "PIN is usually 4-8 digits",
+  "validationPostalCodeLength": "Postal code is usually 5-10 digits",
+  "validationDateFormat": "Please enter a valid date format (YYYY-MM-DD)",
+  "validationCardNumberLength": "Card number is usually 13-19 digits",
+  "validationIdNumberLength": "ID number should be 15 or 18 digits",
+  "validationLicenseKeyLength": "{field} length cannot be less than 8 characters",
+  "@validationLicenseKeyLength": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "validationUsernameLength": "Username length cannot be less than 2 characters",
+  "validationUsernameMaxLength": "Username length cannot exceed 50 characters",
+  "validationSsidMaxLength": "WiFi name length cannot exceed 32 characters"
+}

@@ -14,6 +14,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:password_manager/app/app_theme.dart';
 import 'package:password_manager/presentation/components/password_window_listener.dart';
 import 'package:password_manager/presentation/components/navigator_key_holder.dart';
@@ -22,6 +23,8 @@ import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:password_manager/presentation/screens/lock_screen.dart';
 import 'package:password_manager/presentation/screens/main_screen.dart';
 import 'package:password_manager/utils/constants/system_constants.dart';
+import 'package:password_manager/utils/helpers/language_manager.dart';
+import 'package:password_manager/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tray_manager/tray_manager.dart';
@@ -59,11 +62,15 @@ Future<void> main(List<String> args) async {
   // 检查认证状态
   //final isAuthenticated = await AuthService().authenticate();
 
+  // 初始化语言管理器
+  final languageManager = LanguageManager();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<PasswordProvider>.value(value: passwordProvider),
         ChangeNotifierProvider<AuthProvider>.value(value: AuthProvider()),
+        ChangeNotifierProvider<LanguageManager>.value(value: languageManager),
       ],
       child: MyAppWrapper(),
     ),
@@ -72,6 +79,19 @@ Future<void> main(List<String> args) async {
 
 class MyAppWrapper extends StatefulWidget {
   const MyAppWrapper({Key? key}) : super(key: key);
+
+  // 添加一个静态方法供其他页面调用以重新加载设置
+  static void reloadSettings(BuildContext context) {
+    final state = context.findAncestorStateOfType<_MyAppWrapperState>();
+    if (state != null) {
+      state.reloadSettings();
+    }
+  }
+
+  // 添加全局访问器
+  static _MyAppWrapperState? of(BuildContext context) {
+    return context.findAncestorStateOfType<_MyAppWrapperState>();
+  }
 
   @override
   _MyAppWrapperState createState() => _MyAppWrapperState();
@@ -82,11 +102,15 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
   String _iconType = kIconTypeOriginal;
   Menu? _menu;
   Timer? _timer;
-  var isLoggedIn = false;
+  bool isLoggedIn = false;
+  String _selectedTheme = 'light'; // 添加主题设置变量
+  String _selectedLanguage = 'zh'; // 添加语言设置变量
+  static _MyAppWrapperState? _instance;
 
   @override
   void initState() {
     super.initState();
+    _instance = this;
 
     trayManager.addListener(this);
     handleSetIcon(kIconTypeDefault);
@@ -96,9 +120,34 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // 加载设置
       await _loadSettings();
-      authProvider.authenticate();
+
+      // 根据设置决定是否使用生物识别认证
+      final prefs = await SharedPreferences.getInstance();
+      final biometricAuthEnabled = prefs.getBool('biometricAuth') ?? true;
+
+      if (biometricAuthEnabled) {
+        authProvider.authenticate();
+      }
+
       resetIdleTimer(context);
     });
+  }
+
+  // 静态方法供其他页面调用以重新加载设置
+  static Future<void> reloadAppSettings() async {
+    if (_instance != null) {
+      await _instance!._loadSettings();
+      _instance!.setState(() {}); // 触发重建以应用新主题
+    }
+  }
+
+  // 实例方法供重新加载设置
+  Future<void> reloadSettings() async {
+    await _loadSettings();
+    // 立即触发重建以应用新主题
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> handleSetIcon(String iconType) async {
@@ -135,7 +184,13 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
     await windowManager.show();
 
     if (!isLoggedIn) {
-      Provider.of<AuthProvider>(context, listen: false).authenticate();
+      // 根据设置决定是否使用生物识别认证
+      final prefs = await SharedPreferences.getInstance();
+      final biometricAuthEnabled = prefs.getBool('biometricAuth') ?? true;
+
+      if (biometricAuthEnabled) {
+        Provider.of<AuthProvider>(context, listen: false).authenticate();
+      }
     } else {
       await windowManager.focus();
     }
@@ -451,6 +506,23 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
     // 检查是否启用生物识别认证
     final biometricAuthEnabled = prefs.getBool('biometricAuth') ?? true;
 
+    // 加载主题设置
+    final savedTheme = prefs.getString('theme') ?? 'light';
+    final savedLanguage = prefs.getString('language') ?? 'zh';
+
+    // 只在主题或语言发生变化时才调用 setState
+    if (_selectedTheme != savedTheme || _selectedLanguage != savedLanguage) {
+      if (mounted) {
+        setState(() {
+          _selectedTheme = savedTheme;
+          _selectedLanguage = savedLanguage;
+        });
+      } else {
+        _selectedTheme = savedTheme;
+        _selectedLanguage = savedLanguage;
+      }
+    }
+
     // 如果设置中禁用了生物识别，则不使用生物识别认证
     if (!biometricAuthEnabled) {
       // 这里可以添加相应的处理逻辑
@@ -506,11 +578,38 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
     return GestureDetector(
       onTap: () => resetIdleTimer(context),
       onPanDown: (_) => resetIdleTimer(context),
-      child: MaterialApp(
-        navigatorKey: NavigatorKeyHolder.navigatorKey,
-        theme: AppTheme.lightTheme,
-        home: isLoggedIn ? MainScreen() : LockScreen(),
+      child: Consumer<LanguageManager>(
+        builder: (context, languageManager, child) {
+          return MaterialApp(
+            navigatorKey: NavigatorKeyHolder.navigatorKey,
+            title: 'SecureVault',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: _getThemeMode(),
+            locale: languageManager.currentLocale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en'), Locale('zh')],
+            home: isLoggedIn ? MainScreen() : LockScreen(),
+          );
+        },
       ),
     );
+  }
+
+  // 根据设置获取主题模式
+  ThemeMode _getThemeMode() {
+    switch (_selectedTheme) {
+      case 'dark':
+        return ThemeMode.dark;
+      case 'light':
+        return ThemeMode.light;
+      default:
+        return ThemeMode.system;
+    }
   }
 }
