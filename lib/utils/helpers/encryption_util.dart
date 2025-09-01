@@ -198,21 +198,7 @@ class EncryptionUtil {
       return '';
     }
   }
-
-  // 验证Base64格式
-  bool _isValidBase64(String str) {
-    try {
-      // 检查基本格式
-      if (str.length % 4 != 0) return false;
-
-      // 尝试解码
-      base64Decode(str);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
+  
   // 清理资源
   void dispose() {
     _isInitialized = false;

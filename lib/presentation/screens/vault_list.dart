@@ -11,7 +11,6 @@
  * Website: https://v8en.com
  */
 import 'package:flutter/material.dart';
-import 'package:password_manager/app/app_theme.dart';
 import 'package:password_manager/data/models/password_entry.dart';
 import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:provider/provider.dart';
