@@ -27,7 +27,7 @@ jobs:
         run: brew install create-dmg
 
       - name: Build macOS version
-        run: flutter build macos --release
+        run: flutter build macos --release --build-number=$GITHUB_RUN_NUMBER --no-codesign
 
       - name: Create release packages
         run: |
