@@ -185,7 +185,6 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
     _menu = Menu(
       items: [
         MenuItem(label: '锁定', onClick: (item) => _onLock()),
-        MenuItem(label: '偏好设置', onClick: (item) => _onSettings()),
         MenuItem(label: '打开 Secure Vault', onClick: (item) => _onOpen()),
 
         MenuItem.separator(),
