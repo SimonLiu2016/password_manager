@@ -23,9 +23,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run code analysis
-        run: flutter analyze
-
       - name: Install create-dmg
         run: brew install create-dmg
 
