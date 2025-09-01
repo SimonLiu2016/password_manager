@@ -24,7 +24,7 @@ import 'package:open_file/open_file.dart';
 import 'dart:io';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();

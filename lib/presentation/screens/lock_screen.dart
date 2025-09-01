@@ -16,7 +16,7 @@ import 'package:password_manager/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
 class LockScreen extends StatefulWidget {
-  const LockScreen({Key? key}) : super(key: key);
+  const LockScreen({super.key});
 
   @override
   _LockScreenWidgetState createState() => _LockScreenWidgetState();

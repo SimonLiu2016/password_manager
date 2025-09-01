@@ -19,8 +19,7 @@ import 'dart:math';
 class PasswordGenerator extends StatefulWidget {
   final Function(String) onPasswordGenerated;
 
-  const PasswordGenerator({Key? key, required this.onPasswordGenerated})
-    : super(key: key);
+  const PasswordGenerator({super.key, required this.onPasswordGenerated});
 
   @override
   State<PasswordGenerator> createState() => _PasswordGeneratorState();

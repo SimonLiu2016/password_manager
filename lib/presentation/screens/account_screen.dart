@@ -20,7 +20,7 @@ import 'package:provider/provider.dart';
 import 'package:local_auth/local_auth.dart';
 
 class AccountScreen extends StatefulWidget {
-  const AccountScreen({Key? key}) : super(key: key);
+  const AccountScreen({super.key});
 
   @override
   State<AccountScreen> createState() => _AccountScreenState();

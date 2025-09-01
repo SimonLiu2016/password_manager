@@ -17,7 +17,7 @@ import 'package:password_manager/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
 class SetupScreen extends StatefulWidget {
-  const SetupScreen({Key? key}) : super(key: key);
+  const SetupScreen({super.key});
 
   @override
   _SetupScreenState createState() => _SetupScreenState();

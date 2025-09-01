@@ -22,7 +22,7 @@ import 'package:password_manager/l10n/app_localizations.dart';
 class PasswordDetails extends StatefulWidget {
   final PasswordEntry? selectedPassword;
 
-  const PasswordDetails({Key? key, this.selectedPassword}) : super(key: key);
+  const PasswordDetails({super.key, this.selectedPassword});
 
   @override
   State<PasswordDetails> createState() => _PasswordDetailsState();

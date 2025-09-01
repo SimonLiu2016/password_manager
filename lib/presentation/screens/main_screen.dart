@@ -22,7 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:password_manager/l10n/app_localizations.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();

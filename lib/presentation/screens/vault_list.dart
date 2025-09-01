@@ -64,12 +64,12 @@ class VaultList extends StatefulWidget {
   final String? selectedTag; // 添加标签筛选参数
 
   const VaultList({
-    Key? key,
+    super.key,
     required this.onPasswordSelected,
     required this.searchQuery,
     required this.selectedCategory, // 添加必需参数
     this.selectedTag, // 添加可选参数
-  }) : super(key: key);
+  });
 
   @override
   State<VaultList> createState() => _VaultListState();
@@ -115,7 +115,7 @@ class _VaultListState extends State<VaultList> {
     // 按标签筛选（优先级最高）
     if (widget.selectedTag != null && widget.selectedTag!.isNotEmpty) {
       filteredPasswords = passwordProvider.getPasswordsByTag(
-        widget.selectedTag!,
+        widget.selectedTag ?? "",
       );
     }
     // 按分类筛选
@@ -189,7 +189,7 @@ class _VaultListState extends State<VaultList> {
                         : (widget.selectedTag != null &&
                                   widget.selectedTag!.isNotEmpty
                               ? AppLocalizations.of(context)!.tagItems(
-                                  widget.selectedTag!,
+                                  widget.selectedTag ?? "",
                                   filteredPasswords.length,
                                 )
                               : AppLocalizations.of(context)!.categoryItems(
@@ -342,10 +342,10 @@ class _VaultListState extends State<VaultList> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (password.url != null && password.url!.isNotEmpty) ...[
+                      if (password.url.isNotEmpty) ...[
                         SizedBox(height: 2),
                         Text(
-                          password.url!,
+                          password.url,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: Theme.of(context)

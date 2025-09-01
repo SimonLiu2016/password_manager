@@ -20,7 +20,7 @@ import 'package:password_manager/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 
 class AddPasswordScreen extends StatefulWidget {
-  const AddPasswordScreen({Key? key}) : super(key: key);
+  const AddPasswordScreen({super.key});
 
   @override
   State<AddPasswordScreen> createState() => _AddPasswordScreenState();
@@ -124,7 +124,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
         return l10n.secureNote;
       case PasswordEntryType.license:
         return l10n.softwareLicense;
-      }
+    }
   }
 
   // 改变类型
