@@ -706,8 +706,6 @@ class _PasswordDetailsState extends State<PasswordDetails> {
         return l10n.secureNote;
       case PasswordEntryType.license:
         return l10n.softwareLicense;
-      default:
-        return PasswordEntryTypeConfig.getName(type); // 降级到中文名称
     }
   }
 

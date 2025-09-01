@@ -12,7 +12,6 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:password_manager/app/app_theme.dart';
 import 'package:password_manager/presentation/providers/auth_provider.dart';
 import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:password_manager/main.dart';

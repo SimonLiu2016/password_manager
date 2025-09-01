@@ -124,9 +124,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
         return l10n.secureNote;
       case PasswordEntryType.license:
         return l10n.softwareLicense;
-      default:
-        return PasswordEntryTypeConfig.getName(type);
-    }
+      }
   }
 
   // 改变类型
@@ -178,7 +176,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final typeConfig = PasswordEntryTypeConfig.getConfig(_selectedType);
+    PasswordEntryTypeConfig.getConfig(_selectedType);
     final fields = PasswordEntryTypeConfig.getFields(_selectedType);
 
     return Scaffold(
