@@ -26,9 +26,6 @@ jobs:
       - name: Install create-dmg
         run: brew install create-dmg
 
-      - name: Build Windows version
-        run: flutter build windows --release
-
       - name: Build macOS version
         run: flutter build macos --release
 
