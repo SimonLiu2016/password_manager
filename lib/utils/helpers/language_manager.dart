@@ -81,7 +81,7 @@ class LanguageManager extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       // 处理保存失败的情况
-      print('Failed to save language preference: $e');
+      // Failed to save language preference: $e
     }
   }
 

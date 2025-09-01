@@ -37,9 +37,9 @@ class EncryptionUtil {
       // 使用ECB模式避免IV相关问题，对于密码管理器来说安全性足够
       _encrypter = Encrypter(AES(key, mode: AESMode.ecb));
       _isInitialized = true;
-      print('加密工具初始化成功');
+      // 加密工具初始化成功
     } catch (e) {
-      print('加密工具初始化失败: $e');
+      // 加密工具初始化失败: $e
       rethrow;
     }
   }
@@ -54,11 +54,11 @@ class EncryptionUtil {
         // 生成新密钥并存储
         final key = Key.fromSecureRandom(_keyLength);
         await _storage.write(key: _storageKey, value: key.base64);
-        print('生成新的加密密钥');
+        // 生成新的加密密钥
         return key;
       }
     } catch (e) {
-      print('加载密钥失败: $e');
+      // 加载密钥失败: $e
       // 生成新密钥作为备选
       final key = Key.fromSecureRandom(_keyLength);
       await _storage.write(key: _storageKey, value: key.base64);
@@ -71,7 +71,7 @@ class EncryptionUtil {
     try {
       // 验证初始化
       if (!_isInitialized || _encrypter == null) {
-        print('加密工具未初始化');
+        // 加密工具未初始化
         return '';
       }
 
@@ -84,7 +84,7 @@ class EncryptionUtil {
       final encrypted = _encrypter!.encrypt(plainText);
       return encrypted.base64;
     } catch (e) {
-      print('加密失败: $e, 原文长度: ${plainText.length}');
+      // 加密失败: $e, 原文长度: ${plainText.length}
       return '';
     }
   }
@@ -94,7 +94,7 @@ class EncryptionUtil {
     try {
       // 验证初始化
       if (!_isInitialized || _encrypter == null) {
-        print('加密工具未初始化');
+        // 加密工具未初始化
         return '';
       }
 
@@ -114,13 +114,13 @@ class EncryptionUtil {
         final encrypted = Encrypted.fromBase64(encryptedText);
         return _encrypter!.decrypt(encrypted);
       } catch (e) {
-        print('直接解密失败: $e');
+        // 直接解密失败: $e
       }
 
       // 最后尝试旧格式（使用CBC模式解密）
       return await _tryDecryptOldFormat(encryptedText);
     } catch (e) {
-      print('解密失败: $e, 数据长度: ${encryptedText.length}');
+      // 解密失败: $e, 数据长度: ${encryptedText.length}
       return '';
     }
   }
@@ -130,7 +130,7 @@ class EncryptionUtil {
     // 对于简单的ECB解密，使用同步方法
     try {
       if (!_isInitialized || _encrypter == null) {
-        print('加密工具未初始化');
+        // 加密工具未初始化
         return '';
       }
 
@@ -142,7 +142,7 @@ class EncryptionUtil {
       final encrypted = Encrypted.fromBase64(encryptedText);
       return _encrypter!.decrypt(encrypted);
     } catch (e) {
-      print('同步解密失败: $e');
+      // 同步解密失败: $e
       return '';
     }
   }
@@ -198,7 +198,7 @@ class EncryptionUtil {
       return '';
     }
   }
-  
+
   // 清理资源
   void dispose() {
     _isInitialized = false;

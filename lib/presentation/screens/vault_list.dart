@@ -255,12 +255,16 @@ class _VaultListState extends State<VaultList> {
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isSelected
-                  ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
+                  ? Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.08)
                   : Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.3)
                     : Colors.transparent,
                 width: 2,
               ),
@@ -269,14 +273,14 @@ class _VaultListState extends State<VaultList> {
                       BoxShadow(
                         color: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.15),
+                        ).colorScheme.primary.withValues(alpha: 0.15),
                         blurRadius: 8,
                         offset: Offset(0, 2),
                       ),
                     ]
                   : [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 8,
                         offset: Offset(0, 1),
                       ),
@@ -289,7 +293,9 @@ class _VaultListState extends State<VaultList> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: isSelected ? boxColor : boxColor.withOpacity(0.1),
+                    color: isSelected
+                        ? boxColor
+                        : boxColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -342,9 +348,10 @@ class _VaultListState extends State<VaultList> {
                           password.url!,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant
+                                    .withValues(alpha: 0.7),
                               ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -387,10 +394,10 @@ class _VaultListState extends State<VaultList> {
                 colors: [
                   Theme.of(
                     context,
-                  ).colorScheme.onSurfaceVariant.withOpacity(0.1),
+                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
                   Theme.of(
                     context,
-                  ).colorScheme.onSurfaceVariant.withOpacity(0.05),
+                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -399,7 +406,7 @@ class _VaultListState extends State<VaultList> {
               border: Border.all(
                 color: Theme.of(
                   context,
-                ).colorScheme.onSurfaceVariant.withOpacity(0.2),
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
                 width: 2,
               ),
             ),
@@ -413,7 +420,7 @@ class _VaultListState extends State<VaultList> {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurfaceVariant.withOpacity(0.05),
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(40),
                   ),
                 ),
@@ -423,7 +430,7 @@ class _VaultListState extends State<VaultList> {
                   size: 48,
                   color: Theme.of(
                     context,
-                  ).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                 ),
                 // 装饰性加号
                 Positioned(
@@ -439,7 +446,7 @@ class _VaultListState extends State<VaultList> {
                         BoxShadow(
                           color: Theme.of(
                             context,
-                          ).colorScheme.primary.withOpacity(0.3),
+                          ).colorScheme.primary.withValues(alpha: 0.3),
                           blurRadius: 4,
                           offset: Offset(0, 2),
                         ),
