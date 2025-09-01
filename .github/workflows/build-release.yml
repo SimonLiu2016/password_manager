@@ -1,0 +1,66 @@
+name: Build and Release Password Manager
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Release Packages
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.0"
+          channel: "stable"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code analysis
+        run: flutter analyze
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Build Windows version
+        run: flutter build windows --release
+
+      - name: Build macOS version
+        run: flutter build macos --release
+
+      - name: Create release packages
+        run: |
+          chmod +x build_release.sh
+          ./build_release.sh
+
+      - name: Create installers
+        run: |
+          chmod +x create_installer.sh
+          ./create_installer.sh
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: password-manager-builds
+          path: |
+            build/release/
+            build/installer/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            build/release/*.zip
+            build/installer/*.dmg
+            build/installer/*.exe
+            build/installer/*.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
