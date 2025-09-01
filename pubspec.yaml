@@ -37,6 +37,8 @@ dependencies:
   provider: ^6.1.5 # 用于状态管理
   path_provider: ^2.1.5
   url_launcher: ^6.3.2 # 用于打开外部链接
+  file_picker: ^8.0.3 # 用于文件选择
+  open_file: ^3.3.2 # 用于打开文件
 
 dev_dependencies:
   flutter_test:

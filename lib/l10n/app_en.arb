@@ -273,5 +273,14 @@
   },
   "validationUsernameLength": "Username length cannot be less than 2 characters",
   "validationUsernameMaxLength": "Username length cannot exceed 50 characters",
-  "validationSsidMaxLength": "WiFi name length cannot exceed 32 characters"
+  "validationSsidMaxLength": "WiFi name length cannot exceed 32 characters",
+  
+  "pleaseWait": "Please wait",
+  "failed": "Failed",
+  "backupCompleted": "Backup completed",
+  "openBackupLocation": "Do you want to open the backup file location?",
+  "open": "Open",
+  "restoreWarning": "Warning: This operation will replace all your current password data. Please ensure you have backed up important data.",
+
+  "encryptedFile": "Encrypted file"
 }

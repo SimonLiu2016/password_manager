@@ -18,10 +18,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:password_manager/app/app_theme.dart';
 import 'package:password_manager/presentation/components/password_window_listener.dart';
 import 'package:password_manager/presentation/components/navigator_key_holder.dart';
+import 'package:password_manager/presentation/components/authentication/auth_service.dart';
 import 'package:password_manager/presentation/providers/auth_provider.dart';
 import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:password_manager/presentation/screens/lock_screen.dart';
 import 'package:password_manager/presentation/screens/main_screen.dart';
+import 'package:password_manager/presentation/screens/setup_screen.dart';
 import 'package:password_manager/utils/constants/system_constants.dart';
 import 'package:password_manager/utils/helpers/language_manager.dart';
 import 'package:password_manager/l10n/app_localizations.dart';
@@ -103,8 +105,9 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
   Menu? _menu;
   Timer? _timer;
   bool isLoggedIn = false;
-  String _selectedTheme = 'light'; // 添加主题设置变量
-  String _selectedLanguage = 'zh'; // 添加语言设置变量
+  bool _needsSetup = false; // 添加初始设置状态变量
+  String _selectedTheme = 'light';
+  String _selectedLanguage = 'zh';
   static _MyAppWrapperState? _instance;
 
   @override
@@ -118,6 +121,9 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
     var authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 检查是否需要初始设置
+      await _checkIfSetupNeeded();
+
       // 加载设置
       await _loadSettings();
 
@@ -125,12 +131,24 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
       final prefs = await SharedPreferences.getInstance();
       final biometricAuthEnabled = prefs.getBool('biometricAuth') ?? true;
 
-      if (biometricAuthEnabled) {
+      if (biometricAuthEnabled && !_needsSetup) {
         authProvider.authenticate();
       }
 
       resetIdleTimer(context);
     });
+  }
+
+  // 检查是否需要初始设置
+  Future<void> _checkIfSetupNeeded() async {
+    final authService = AuthService();
+    final isMasterPasswordSet = await authService.isMasterPasswordSet();
+
+    if (!isMasterPasswordSet) {
+      setState(() {
+        _needsSetup = true;
+      });
+    }
   }
 
   // 静态方法供其他页面调用以重新加载设置
@@ -594,7 +612,17 @@ class _MyAppWrapperState extends State<MyAppWrapper> with TrayListener {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: const [Locale('en'), Locale('zh')],
-            home: isLoggedIn ? MainScreen() : LockScreen(),
+            home: _needsSetup
+                ? SetupScreen()
+                : isLoggedIn
+                ? MainScreen()
+                : LockScreen(),
+            // 添加命名路由
+            routes: {
+              '/setup': (context) => SetupScreen(),
+              '/lock': (context) => LockScreen(),
+              '/main': (context) => MainScreen(),
+            },
           );
         },
       ),

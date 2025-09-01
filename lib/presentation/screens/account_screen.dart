@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:password_manager/app/app_theme.dart';
 import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:password_manager/presentation/providers/auth_provider.dart';
+import 'package:password_manager/presentation/components/authentication/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -288,8 +289,260 @@ class _AccountScreenState extends State<AccountScreen> {
 
           // 修改密码表单（条件显示）
           if (_showChangePassword) _buildChangePasswordForm(),
+
+          Divider(height: 1, color: AppTheme.divider),
+
+          // 忘记密码
+          _buildSettingsTile(
+            icon: Icons.help_rounded,
+            title: '忘记密码',
+            subtitle: '重置应用解锁密码',
+            trailing: Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: AppTheme.textSecondary,
+            ),
+            onTap: _showResetPasswordDialog,
+          ),
         ],
       ),
+    );
+  }
+
+  // 显示重置密码对话框
+  void _showResetPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.warning_rounded, color: AppTheme.error, size: 24),
+              SizedBox(width: 12),
+              Text(
+                '忘记密码',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            '重置密码将清除所有已保存的密码数据，且无法恢复。请确保已备份重要数据。\n\n此操作不可撤销，是否继续？',
+            style: TextStyle(color: AppTheme.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('取消'),
+            ),
+            Container(
+              decoration: BoxDecoration(
+                color: AppTheme.error,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _showResetPasswordForm();
+                },
+                child: Text(
+                  '重置密码',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 显示重置密码表单
+  void _showResetPasswordForm() {
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    bool isPasswordVisible = false;
+    bool isConfirmPasswordVisible = false;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                '重置密码',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 新密码输入框
+                  TextFormField(
+                    controller: newPasswordController,
+                    obscureText: !isPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: '新密码',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: Icon(Icons.lock_rounded, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isPasswordVisible
+                              ? Icons.visibility_rounded
+                              : Icons.visibility_off_rounded,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+
+                  // 确认新密码输入框
+                  TextFormField(
+                    controller: confirmPasswordController,
+                    obscureText: !isConfirmPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: '确认新密码',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: Icon(Icons.lock_rounded, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isConfirmPasswordVisible
+                              ? Icons.visibility_rounded
+                              : Icons.visibility_off_rounded,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isConfirmPasswordVisible =
+                                !isConfirmPasswordVisible;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('取消'),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: TextButton(
+                    onPressed: () async {
+                      final newPassword = newPasswordController.text;
+                      final confirmPassword = confirmPasswordController.text;
+
+                      // 验证输入
+                      if (newPassword.isEmpty || confirmPassword.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('请填写所有字段'),
+                            backgroundColor: AppTheme.error,
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (newPassword != confirmPassword) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('两次输入的密码不一致'),
+                            backgroundColor: AppTheme.error,
+                          ),
+                        );
+                        return;
+                      }
+
+                      if (newPassword.length < 6) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('密码长度至少6位'),
+                            backgroundColor: AppTheme.error,
+                          ),
+                        );
+                        return;
+                      }
+
+                      try {
+                        // 获取密码提供者
+                        final passwordProvider = Provider.of<PasswordProvider>(
+                          context,
+                          listen: false,
+                        );
+
+                        // 清除所有密码数据
+                        await passwordProvider.clearAllPasswords();
+
+                        // 重置主密码
+                        final authService = AuthService();
+                        await authService.resetMasterPassword(newPassword);
+
+                        // 显示成功消息
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('密码重置成功，请重新登录'),
+                            backgroundColor: AppTheme.success,
+                          ),
+                        );
+
+                        // 锁定应用
+                        Provider.of<AuthProvider>(
+                          context,
+                          listen: false,
+                        ).lock();
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('密码重置失败: $e'),
+                            backgroundColor: AppTheme.error,
+                          ),
+                        );
+                      }
+                    },
+                    child: Text(
+                      '重置',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -409,37 +662,42 @@ class _AccountScreenState extends State<AccountScreen> {
       return;
     }
 
-    // 验证当前密码（这里简化处理，实际应该与存储的密码比较）
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final isAuthenticated = await authProvider.authenticateWithPassword(
-      currentPassword,
-    );
-
-    if (!isAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('当前密码错误'), backgroundColor: AppTheme.error),
-      );
-      return;
-    }
-
-    // 这里应该实现实际的密码修改逻辑
-    // 由于当前项目使用生物识别认证，没有存储主密码，这里简化处理
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('密码修改功能将在后续版本中实现'),
-        backgroundColor: AppTheme.primaryBlue,
-      ),
-    );
-
-    // 清空输入框
-    _passwordController.clear();
-    _newPasswordController.clear();
-    _confirmPasswordController.clear();
-
-    // 隐藏表单
+    // 显示加载状态
     setState(() {
-      _showChangePassword = false;
+      // 可以添加加载指示器
     });
+
+    try {
+      final authService = AuthService();
+      final success = await authService.changeMasterPassword(
+        currentPassword,
+        newPassword,
+      );
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('密码修改成功'), backgroundColor: AppTheme.success),
+        );
+
+        // 清空输入框
+        _passwordController.clear();
+        _newPasswordController.clear();
+        _confirmPasswordController.clear();
+
+        // 隐藏表单
+        setState(() {
+          _showChangePassword = false;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('当前密码错误'), backgroundColor: AppTheme.error),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('密码修改失败: $e'), backgroundColor: AppTheme.error),
+      );
+    }
   }
 
   // 构建使用统计
@@ -494,13 +752,17 @@ class _AccountScreenState extends State<AccountScreen> {
   void _showPasswordTypeStats() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // 允许更大的高度
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
         return Container(
           padding: EdgeInsets.all(20),
-          height: 300,
+          margin: EdgeInsets.only(
+            top: MediaQuery.of(context).size.height * 0.1,
+          ), // 往上移动，距离顶部10%
+          height: 400, // 固定高度为300像素
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -535,6 +797,19 @@ class _AccountScreenState extends State<AccountScreen> {
                     for (final password in passwords) {
                       final typeName = password.type.toString().split('.').last;
                       typeCounts[typeName] = (typeCounts[typeName] ?? 0) + 1;
+                    }
+
+                    // 如果没有密码数据，显示提示信息
+                    if (typeCounts.isEmpty) {
+                      return Center(
+                        child: Text(
+                          '暂无密码数据',
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 16,
+                          ),
+                        ),
+                      );
                     }
 
                     return ListView.builder(
@@ -587,43 +862,21 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  // 获取类型显示名称
-  String _getTypeDisplayName(String type) {
-    switch (type) {
-      case 'login':
-        return '登录信息';
-      case 'creditCard':
-        return '信用卡';
-      case 'identity':
-        return '身份标识';
-      case 'secureNote':
-        return '安全笔记';
-      case 'server':
-        return '服务器';
-      case 'database':
-        return '数据库';
-      case 'device':
-        return '安全设备';
-      case 'wifi':
-        return 'WiFi密码';
-      case 'license':
-        return '软件许可证';
-      default:
-        return type;
-    }
-  }
-
   // 显示登录历史
   void _showLoginHistory() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // 允许更大的高度
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
         return Container(
           padding: EdgeInsets.all(20),
-          height: 300,
+          margin: EdgeInsets.only(
+            top: MediaQuery.of(context).size.height * 0.1,
+          ), // 往上移动，距离顶部10%
+          height: 300, // 固定高度为300像素
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -728,6 +981,32 @@ class _AccountScreenState extends State<AccountScreen> {
       return Icons.phone_iphone_rounded;
     } else {
       return Icons.devices_rounded;
+    }
+  }
+
+  // 获取类型显示名称
+  String _getTypeDisplayName(String type) {
+    switch (type) {
+      case 'login':
+        return '登录信息';
+      case 'creditCard':
+        return '信用卡';
+      case 'identity':
+        return '身份标识';
+      case 'secureNote':
+        return '安全笔记';
+      case 'server':
+        return '服务器';
+      case 'database':
+        return '数据库';
+      case 'device':
+        return '安全设备';
+      case 'wifi':
+        return 'WiFi密码';
+      case 'license':
+        return '软件许可证';
+      default:
+        return type;
     }
   }
 

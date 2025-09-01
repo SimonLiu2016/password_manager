@@ -564,4 +564,25 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get validationSsidMaxLength =>
       'WiFi name length cannot exceed 32 characters';
+
+  @override
+  String get pleaseWait => '请稍候';
+
+  @override
+  String get failed => '失败';
+
+  @override
+  String get backupCompleted => '备份已完成';
+
+  @override
+  String get openBackupLocation => '是否要打开备份文件所在位置？';
+
+  @override
+  String get open => '打开';
+
+  @override
+  String get restoreWarning => '警告：此操作将替换您当前的所有密码数据，请确保已备份重要数据。';
+
+  @override
+  String get encryptedFile => '加密文件';
 }

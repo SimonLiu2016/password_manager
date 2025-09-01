@@ -578,4 +578,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get validationSsidMaxLength =>
       'WiFi name length cannot exceed 32 characters';
+
+  @override
+  String get pleaseWait => 'Please wait';
+
+  @override
+  String get failed => 'Failed';
+
+  @override
+  String get backupCompleted => 'Backup completed';
+
+  @override
+  String get openBackupLocation =>
+      'Do you want to open the backup file location?';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get restoreWarning =>
+      'Warning: This operation will replace all your current password data. Please ensure you have backed up important data.';
+
+  @override
+  String get encryptedFile => 'Encrypted file';
 }

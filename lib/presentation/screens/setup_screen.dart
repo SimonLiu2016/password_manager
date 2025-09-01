@@ -1,10 +1,10 @@
 /*
- * Password Manager - App Theme Configuration
+ * Password Manager - Initial Setup Screen
  * 
  * Copyright (c) 2024 V8EN (https://v8en.com)
  * Author: Simon <582883825@qq.com>
  * 
- * This file contains the theme configuration for the Password Manager application.
+ * This file contains the initial setup screen for the Password Manager application.
  * Developed by V8EN organization.
  * 
  * Contact: 582883825@qq.com
@@ -12,21 +12,24 @@
  */
 import 'package:flutter/material.dart';
 import 'package:password_manager/app/app_theme.dart';
+import 'package:password_manager/presentation/components/authentication/auth_service.dart';
 import 'package:password_manager/presentation/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
-class LockScreen extends StatefulWidget {
-  const LockScreen({Key? key}) : super(key: key);
+class SetupScreen extends StatefulWidget {
+  const SetupScreen({Key? key}) : super(key: key);
 
   @override
-  _LockScreenWidgetState createState() => _LockScreenWidgetState();
+  _SetupScreenState createState() => _SetupScreenState();
 }
 
-class _LockScreenWidgetState extends State<LockScreen>
+class _SetupScreenState extends State<SetupScreen>
     with TickerProviderStateMixin {
   final TextEditingController _passwordController = TextEditingController();
-  bool _isBiometricAvailable = false; // 生物识别可用状态
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -50,68 +53,70 @@ class _LockScreenWidgetState extends State<LockScreen>
         );
 
     _animationController.forward();
-    isBiometricAvailable(); // 检查生物识别是否可用
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void isBiometricAvailable() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  // 设置主密码
+  void _onSetPassword() async {
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
 
-    authProvider.isBiometricAvailable().then((available) {
-      setState(() {
-        _isBiometricAvailable = available;
-      });
-    });
-  }
+    // 验证输入
+    if (password.isEmpty || confirmPassword.isEmpty) {
+      _showErrorMessage('请填写所有字段');
+      return;
+    }
 
-  void _onPasswordEntered(String password) async {
-    if (password.isEmpty) return;
+    if (password != confirmPassword) {
+      _showErrorMessage('两次输入的密码不一致');
+      return;
+    }
+
+    if (password.length < 6) {
+      _showErrorMessage('密码长度至少6位');
+      return;
+    }
 
     setState(() {
       _isLoading = true;
     });
 
     try {
+      final authService = AuthService();
+      await authService.setMasterPassword(password);
+
+      // 认证用户
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final success = await authProvider.authenticateWithPassword(password);
+      authProvider.authenticateWithPassword(password);
 
-      setState(() {
-        _isLoading = false;
-      });
+      // 显示成功消息
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('主密码设置成功'),
+          backgroundColor: AppTheme.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: EdgeInsets.all(16),
+        ),
+      );
 
-      if (!success) {
-        _showErrorMessage('密码错误，请重试');
-        _passwordController.clear();
-      }
+      // 导航到主屏幕
+      Navigator.of(context).pushReplacementNamed('/main');
     } catch (e) {
+      _showErrorMessage('设置密码时发生错误: $e');
+    } finally {
       setState(() {
         _isLoading = false;
       });
-      _showErrorMessage('验证密码时发生错误: $e');
-      _passwordController.clear();
-    }
-  }
-
-  void _onBiometricAuth() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.authenticate();
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (!success) {
-      _showErrorMessage('生物识别失败，请使用密码解锁');
     }
   }
 
@@ -221,7 +226,7 @@ class _LockScreenWidgetState extends State<LockScreen>
                         SizedBox(height: 32),
 
                         Text(
-                          'SecureVault',
+                          '欢迎使用 SecureVault',
                           style: Theme.of(context).textTheme.headlineMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -249,7 +254,7 @@ class _LockScreenWidgetState extends State<LockScreen>
                             ),
                           ),
                           child: Text(
-                            '安全密码管理器',
+                            '首次使用请设置主密码',
                             style: Theme.of(context).textTheme.bodyLarge
                                 ?.copyWith(
                                   color: AppTheme.textSecondary,
@@ -267,7 +272,6 @@ class _LockScreenWidgetState extends State<LockScreen>
                           child: TextField(
                             controller: _passwordController,
                             obscureText: !_isPasswordVisible,
-                            onSubmitted: _onPasswordEntered,
                             decoration: InputDecoration(
                               hintText: '请输入主密码',
                               prefixIcon: Container(
@@ -308,9 +312,58 @@ class _LockScreenWidgetState extends State<LockScreen>
                           ),
                         ),
 
+                        SizedBox(height: 16),
+
+                        // 确认密码输入框
+                        Container(
+                          decoration: AppTheme.cardDecoration,
+                          child: TextField(
+                            controller: _confirmPasswordController,
+                            obscureText: !_isConfirmPasswordVisible,
+                            decoration: InputDecoration(
+                              hintText: '请再次输入主密码',
+                              prefixIcon: Container(
+                                margin: EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryBlue.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.lock_rounded,
+                                  color: AppTheme.primaryBlue,
+                                  size: 20,
+                                ),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isConfirmPasswordVisible
+                                      ? Icons.visibility_rounded
+                                      : Icons.visibility_off_rounded,
+                                  color: AppTheme.textSecondary,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _isConfirmPasswordVisible =
+                                        !_isConfirmPasswordVisible;
+                                  });
+                                },
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 20,
+                              ),
+                            ),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+
                         SizedBox(height: 24),
 
-                        // 解锁按钮
+                        // 设置密码按钮
                         Container(
                           width: double.infinity,
                           height: 56,
@@ -319,11 +372,7 @@ class _LockScreenWidgetState extends State<LockScreen>
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
-                              onTap: _isLoading
-                                  ? null
-                                  : () => _onPasswordEntered(
-                                      _passwordController.text,
-                                    ),
+                              onTap: _isLoading ? null : _onSetPassword,
                               child: Center(
                                 child: _isLoading
                                     ? SizedBox(
@@ -335,7 +384,7 @@ class _LockScreenWidgetState extends State<LockScreen>
                                         ),
                                       )
                                     : Text(
-                                        '解锁',
+                                        '设置主密码',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 18,
@@ -347,108 +396,55 @@ class _LockScreenWidgetState extends State<LockScreen>
                           ),
                         ),
 
-                        // 生物识别按钮
-                        if (_isBiometricAvailable) ...[
-                          SizedBox(height: 32),
+                        SizedBox(height: 24),
 
-                          Row(
+                        // 密码要求说明
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppTheme.divider,
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(child: Divider(color: AppTheme.divider)),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  '或',
-                                  style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 14,
-                                  ),
+                              Text(
+                                '密码要求：',
+                                style: TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
                                 ),
                               ),
-                              Expanded(child: Divider(color: AppTheme.divider)),
+                              SizedBox(height: 8),
+                              Text(
+                                '• 至少6个字符',
+                                style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              Text(
+                                '• 建议包含大小写字母、数字和特殊字符',
+                                style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              Text(
+                                '• 请牢记此密码，丢失后无法恢复数据',
+                                style: TextStyle(
+                                  color: AppTheme.warning,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ],
                           ),
-
-                          SizedBox(height: 32),
-
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: AppTheme.surface,
-                              borderRadius: BorderRadius.circular(40),
-                              border: Border.all(
-                                color: AppTheme.primaryBlue.withOpacity(0.3),
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primaryBlue.withOpacity(0.1),
-                                  blurRadius: 16,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
-                                onTap: _isLoading ? null : _onBiometricAuth,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    // 背景波纹效果
-                                    Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.primaryBlue.withOpacity(
-                                          0.1,
-                                        ),
-                                        borderRadius: BorderRadius.circular(30),
-                                      ),
-                                    ),
-                                    // 主指纹图标
-                                    Container(
-                                      width: 36,
-                                      height: 36,
-                                      child: Image.asset(
-                                        'images/fingerprint_modern.png',
-                                        width: 36,
-                                        height: 36,
-                                        color: AppTheme.primaryBlue,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                    // 扫描线效果
-                                    Positioned(
-                                      child: Container(
-                                        width: 50,
-                                        height: 2,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.transparent,
-                                              AppTheme.accent.withOpacity(0.8),
-                                              Colors.transparent,
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(height: 12),
-
-                          Text(
-                            '使用生物识别解锁',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: AppTheme.textSecondary),
-                          ),
-                        ],
+                        ),
                       ],
                     ),
                   ),

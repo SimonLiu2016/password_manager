@@ -14,11 +14,15 @@
 import 'package:flutter/material.dart';
 import 'package:password_manager/app/app_theme.dart';
 import 'package:password_manager/presentation/providers/auth_provider.dart';
+import 'package:password_manager/presentation/providers/password_provider.dart';
 import 'package:password_manager/main.dart';
 import 'package:password_manager/utils/helpers/language_manager.dart';
 import 'package:password_manager/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:open_file/open_file.dart';
+import 'dart:io';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -420,50 +424,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: Column(
         children: [
-          // 数据备份
-          _buildSettingsTile(
-            icon: Icons.backup_rounded,
-            title: l10n.dataBackup,
-            subtitle: l10n.dataBackupSubtitle,
-            trailing: Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.backupFeatureComingSoon),
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-              );
-            },
-          ),
-
-          Divider(height: 1, color: Theme.of(context).dividerColor),
-
-          // 数据恢复
-          _buildSettingsTile(
-            icon: Icons.restore_rounded,
-            title: l10n.dataRestore,
-            subtitle: l10n.dataRestoreSubtitle,
-            trailing: Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.restoreFeatureComingSoon),
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-              );
-            },
-          ),
-
-          Divider(height: 1, color: Theme.of(context).dividerColor),
-
           // 数据导出
           _buildSettingsTile(
             icon: Icons.download_rounded,
@@ -474,14 +434,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               size: 16,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.exportFeatureComingSoon),
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-              );
-            },
+            onTap: () => _performExport(context),
           ),
 
           Divider(height: 1, color: Theme.of(context).dividerColor),
@@ -496,14 +449,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               size: 16,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.importFeatureComingSoon),
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                ),
-              );
-            },
+            onTap: () => _performImport(context),
           ),
         ],
       ),
@@ -738,6 +684,223 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return l10n.gridView;
       default:
         return l10n.listView;
+    }
+  }
+
+  // 执行数据导出
+  Future<void> _performExport(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final passwordProvider = Provider.of<PasswordProvider>(
+      context,
+      listen: false,
+    );
+
+    try {
+      // 让用户选择导出文件保存位置
+      final savePath = await FilePicker.platform.saveFile(
+        dialogTitle: l10n.dataExport,
+        fileName:
+            'password_export_${DateTime.now().millisecondsSinceEpoch}.json',
+        allowedExtensions: ['json'],
+        type: FileType.custom,
+      );
+
+      if (savePath != null) {
+        // 显示处理中消息
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.dataExport} ${l10n.pleaseWait}'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+
+        // 执行导出操作到临时文件
+        await passwordProvider.exportPasswords();
+
+        // 获取临时导出文件路径
+        final directory = await passwordProvider
+            .getApplicationDocumentsDirectory();
+        final tempExportFile = File('${directory.path}/passwords_export.json');
+
+        if (await tempExportFile.exists()) {
+          // 复制临时文件到用户选择的位置
+          final destinationFile = File(savePath);
+          await tempExportFile.copy(destinationFile.path);
+
+          // 显示成功消息
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${l10n.dataExport} ${l10n.passwordSaved}'),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          );
+
+          // 询问是否要打开导出文件位置
+          final openFolder = await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                title: Text(l10n.dataExport),
+                content: Text(
+                  '${l10n.backupCompleted}\n${l10n.openBackupLocation}',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(l10n.cancel),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(l10n.open),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (openFolder == true) {
+            await OpenFile.open(savePath);
+          }
+        } else {
+          throw Exception('Export file not found');
+        }
+      }
+    } catch (e) {
+      print('导出失败: $e');
+      // 显示错误消息
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${l10n.dataExport} ${l10n.failed}: ${e.toString()}'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
+  // 执行数据导入
+  Future<void> _performImport(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final passwordProvider = Provider.of<PasswordProvider>(
+      context,
+      listen: false,
+    );
+
+    try {
+      // 让用户选择要导入的文件
+      final result = await FilePicker.platform.pickFiles(
+        dialogTitle: l10n.dataImport,
+        allowedExtensions: ['json'],
+        type: FileType.custom,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final importFilePath = result.files.single.path!;
+        final importFile = File(importFilePath);
+
+        if (await importFile.exists()) {
+          // 显示确认对话框
+          final shouldImport = await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                title: Row(
+                  children: [
+                    Icon(
+                      Icons.upload_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 24,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      l10n.dataImport,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                content: Text(
+                  '${l10n.dataImportSubtitle}\n\n${l10n.restoreWarning}',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(l10n.cancel),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.error,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text(
+                        l10n.confirm,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (shouldImport == true) {
+            // 显示处理中消息
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${l10n.dataImport} ${l10n.pleaseWait}'),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ),
+            );
+
+            // 将选中的导入文件复制到应用文档目录
+            final directory = await passwordProvider
+                .getApplicationDocumentsDirectory();
+            final tempImportFile = File(
+              '${directory.path}/passwords_export.json',
+            );
+            await importFile.copy(tempImportFile.path);
+
+            // 执行导入操作
+            await passwordProvider.importPasswords();
+
+            // 显示成功消息
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${l10n.dataImport} ${l10n.passwordSaved}'),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ),
+            );
+
+            // 重新加载设置以刷新界面
+            if (mounted) {
+              setState(() {});
+            }
+          }
+        } else {
+          throw Exception('Import file does not exist');
+        }
+      }
+    } catch (e) {
+      print('导入失败: $e');
+      // 显示错误消息
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${l10n.dataImport} ${l10n.failed}: ${e.toString()}'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 }

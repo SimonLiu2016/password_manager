@@ -388,20 +388,7 @@ class PasswordRepository {
       case PasswordEntryType.identity:
       case PasswordEntryType.secureNote:
       case PasswordEntryType.device:
-      default:
-        return [];
-    }
-  }
-
-  // 获取密码类型对应的主要密码字段名（保留兼容性）
-  String _getPasswordFieldKey(PasswordEntryType type) {
-    switch (type) {
-      case PasswordEntryType.license:
-        return 'licenseKey'; // 软件许可证使用 licenseKey
-      case PasswordEntryType.creditCard:
-        return 'cvv'; // 信用卡使用 cvv 作为主要加密字段
-      default:
-        return 'password'; // 其他类型使用 password
+      return [];
     }
   }
 
@@ -418,23 +405,55 @@ class PasswordRepository {
     await prefs.setStringList('passwords', passwordsJson);
   }
 
+  // 清除所有密码数据
+  Future<void> clearAllPasswords() async {
+    final prefs = await _prefs;
+    await prefs.remove('passwords');
+
+    // 清除所有与密码相关的数据
+    final keys = prefs.getKeys();
+    final passwordKeys = keys.where(
+      (key) => key.startsWith('password_') || key == 'passwords',
+    );
+
+    for (final key in passwordKeys) {
+      await prefs.remove(key);
+    }
+  }
+
   // 导出密码
   Future<void> exportPasswords() async {
     await _encryptionUtil.initialize();
     final allPasswords = await getAllDecryptedPasswords();
     final encryptedEntries = allPasswords.map((entry) {
-      final encryptedPassword = _encryptionUtil.encrypt(entry.password);
-      final entryWithEncryptedPassword = entry.updateField(
-        'password',
-        encryptedPassword,
-      );
-      return entryWithEncryptedPassword.toMap();
+      // 根据密码类型加密相应的字段
+      if (_typeNeedsPasswordValidation(entry.type)) {
+        final encryptedFields = _getEncryptedFields(entry.type);
+        var entryToExport = entry;
+
+        for (final fieldKey in encryptedFields) {
+          final fieldValue = entry.fields[fieldKey] ?? '';
+          if (fieldValue.isNotEmpty) {
+            final encryptedValue = _encryptionUtil.encrypt(fieldValue);
+            entryToExport = entryToExport.updateField(fieldKey, encryptedValue);
+          }
+        }
+
+        return entryToExport.toMap();
+      }
+
+      // 对于不需要密码验证的类型，直接导出
+      return entry.toMap();
     }).toList();
 
     final jsonData = jsonEncode(encryptedEntries);
+
+    // 对整个JSON数据进行额外加密
+    final encryptedData = _encryptionUtil.encrypt(jsonData);
+
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/passwords_export.json');
-    await file.writeAsString(jsonData);
+    await file.writeAsString(encryptedData);
   }
 
   // 导入密码
@@ -443,26 +462,76 @@ class PasswordRepository {
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/passwords_export.json');
     if (await file.exists()) {
-      final jsonData = await file.readAsString();
-      final entriesJson = jsonDecode(jsonData) as List<dynamic>;
+      // 读取加密的文件内容
+      final encryptedData = await file.readAsString();
+
+      // 解密整个文件内容
+      final decryptedJsonData = _encryptionUtil.decrypt(encryptedData);
+
+      // 解析JSON数据
+      final entriesJson = jsonDecode(decryptedJsonData) as List<dynamic>;
 
       final newPasswords = entriesJson.map((json) {
         final map = json as Map<String, dynamic>;
-        final encryptedPassword = map['password'];
-        final decryptedPassword = _encryptionUtil.decrypt(encryptedPassword);
+
+        // 创建密码条目
         final entry = PasswordEntry.fromMap(map);
-        return entry.updateField('password', decryptedPassword);
+
+        // 根据类型解密相应的字段
+        if (_typeNeedsPasswordValidation(entry.type)) {
+          final encryptedFields = _getEncryptedFields(entry.type);
+          var decryptedEntry = entry;
+
+          for (final fieldKey in encryptedFields) {
+            final encryptedValue = entry.fields[fieldKey] as String? ?? '';
+            if (encryptedValue.isNotEmpty) {
+              try {
+                final decryptedValue = _encryptionUtil.decrypt(encryptedValue);
+                decryptedEntry = decryptedEntry.updateField(
+                  fieldKey,
+                  decryptedValue,
+                );
+              } catch (e) {
+                // 如果解密失败，保持原值
+                print('解密字段 $fieldKey 失败: $e');
+              }
+            }
+          }
+
+          return decryptedEntry;
+        }
+
+        return entry;
       }).toList();
 
       final prefs = await _prefs;
       final allPasswords = await getAllDecryptedPasswords();
+
+      // 清空现有密码并添加导入的密码
+      allPasswords.clear();
       allPasswords.addAll(newPasswords);
 
       final passwordsJson = allPasswords.map((p) {
-        final encryptedPassword = _encryptionUtil.encrypt(p.password);
-        final entryToSave = p.updateField('password', encryptedPassword);
-        return jsonEncode(entryToSave.toMap());
+        // 根据类型加密相应的字段
+        if (_typeNeedsPasswordValidation(p.type)) {
+          final encryptedFields = _getEncryptedFields(p.type);
+          var entryToSave = p;
+
+          for (final fieldKey in encryptedFields) {
+            final fieldValue = p.fields[fieldKey] ?? '';
+            if (fieldValue.isNotEmpty) {
+              final encryptedValue = _encryptionUtil.encrypt(fieldValue);
+              entryToSave = entryToSave.updateField(fieldKey, encryptedValue);
+            }
+          }
+
+          return jsonEncode(entryToSave.toMap());
+        }
+
+        // 对于不需要密码验证的类型，直接存储
+        return jsonEncode(p.toMap());
       }).toList();
+
       await prefs.setStringList('passwords', passwordsJson);
     }
   }

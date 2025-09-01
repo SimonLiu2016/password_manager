@@ -1153,6 +1153,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'WiFi name length cannot exceed 32 characters'**
   String get validationSsidMaxLength;
+
+  /// No description provided for @pleaseWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait'**
+  String get pleaseWait;
+
+  /// No description provided for @failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get failed;
+
+  /// No description provided for @backupCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup completed'**
+  String get backupCompleted;
+
+  /// No description provided for @openBackupLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to open the backup file location?'**
+  String get openBackupLocation;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @restoreWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: This operation will replace all your current password data. Please ensure you have backed up important data.'**
+  String get restoreWarning;
+
+  /// No description provided for @encryptedFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted file'**
+  String get encryptedFile;
 }
 
 class _AppLocalizationsDelegate

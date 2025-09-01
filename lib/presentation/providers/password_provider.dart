@@ -13,6 +13,8 @@
 import 'package:flutter/material.dart';
 import 'package:password_manager/data/models/password_entry.dart';
 import 'package:password_manager/data/repositories/password_repository.dart';
+import 'package:path_provider/path_provider.dart' as path_provider;
+import 'dart:io';
 
 class PasswordProvider with ChangeNotifier {
   final PasswordRepository _repository = PasswordRepository();
@@ -107,6 +109,13 @@ class PasswordProvider with ChangeNotifier {
     await _repository.exportPasswords();
   }
 
+  // 清除所有密码数据
+  Future<void> clearAllPasswords() async {
+    await _repository.clearAllPasswords();
+    _passwords = [];
+    notifyListeners();
+  }
+
   // 切换密码的收藏状态
   Future<void> toggleFavorite(String passwordId) async {
     print('——— PasswordProvider.toggleFavorite 被调用 ———');
@@ -173,5 +182,10 @@ class PasswordProvider with ChangeNotifier {
       }
     }
     return counts;
+  }
+
+  // 添加获取应用文档目录的方法
+  Future<Directory> getApplicationDocumentsDirectory() async {
+    return await path_provider.getApplicationDocumentsDirectory();
   }
 }
