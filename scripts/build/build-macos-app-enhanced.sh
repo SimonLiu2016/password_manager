@@ -32,7 +32,7 @@ if [[ -n "$CI" ]]; then
     
     # 构建macOS应用（带签名）
     echo "Building macOS app with code signing..."
-    flutter build macos --release --build-number=${GITHUB_RUN_NUMBER:-1}
+    flutter build macos --release --build-number=${GITHUB_RUN_NUMBER:-1} -v
   else
     echo "No signing credentials provided, building without code signing"
     
@@ -53,12 +53,12 @@ if [[ -n "$CI" ]]; then
     
     # 构建macOS应用（不带签名）
     echo "Building macOS app without code signing..."
-    flutter build macos --release --build-number=${GITHUB_RUN_NUMBER:-1}
+    flutter build macos --release --build-number=${GITHUB_RUN_NUMBER:-1} -v
   fi
 else
   echo "Running in local environment"
   # 本地环境构建
-  flutter build macos --release
+  flutter build macos --release -v
 fi
 
 BUILD_RESULT=$?
