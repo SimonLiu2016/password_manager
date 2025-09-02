@@ -17,7 +17,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.35.0"
+          flutter-version: "3.x"
           channel: "stable"
 
       - name: Install dependencies
@@ -68,7 +68,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.35.0"
+          flutter-version: "3.x"
           channel: "stable"
 
       - name: Install dependencies
@@ -77,14 +77,19 @@ jobs:
       - name: Install create-dmg
         run: brew install create-dmg
 
-      - name: Setup macOS signing
+      - name: Setup macOS signing (optional)
         run: |
-          chmod +x scripts/build/setup-macos-signing.sh
-          scripts/build/setup-macos-signing.sh
+          if [[ -n "$MACOS_DEVELOPMENT_TEAM" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE_PWD" ]]; then
+            chmod +x scripts/build/setup-macos-signing.sh
+            scripts/build/setup-macos-signing.sh
+          else
+            echo "Skipping code signing setup - missing credentials"
+          fi
         env:
           MACOS_DEVELOPMENT_TEAM: ${{ secrets.MACOS_DEVELOPMENT_TEAM }}
           MACOS_SIGNING_CERTIFICATE: ${{ secrets.MACOS_SIGNING_CERTIFICATE }}
           MACOS_SIGNING_CERTIFICATE_PWD: ${{ secrets.MACOS_SIGNING_CERTIFICATE_PWD }}
+        continue-on-error: true
 
       - name: Build macOS version
         run: |
@@ -123,17 +128,19 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.35.0"
+          flutter-version: "3.x"
           channel: "stable"
 
-      - name: Install dependencies
+      - name: Install basic dependencies
         run: |
           sudo apt update
           sudo apt install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
           flutter pub get
 
       - name: Build Linux version
-        run: flutter build linux --release
+        run: |
+          chmod +x scripts/build/build-linux-app.sh
+          scripts/build/build-linux-app.sh
 
       - name: Create release packages
         run: |

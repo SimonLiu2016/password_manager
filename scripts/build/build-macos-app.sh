@@ -7,7 +7,7 @@ echo "Building macOS app..."
 
 # 获取脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$SCRIPT_DIR/.."
+PROJECT_ROOT="$SCRIPT_DIR/../.."
 
 cd "$PROJECT_ROOT" || exit 1
 
@@ -28,16 +28,20 @@ if [[ -n "$CI" ]]; then
     
     # 更新Xcode项目中的开发团队
     sed -i '' "s/DEVELOPMENT_TEAM = \"\"/DEVELOPMENT_TEAM = \"$MACOS_DEVELOPMENT_TEAM\"/g" macos/Runner.xcodeproj/project.pbxproj
+    
+    # 构建macOS应用（带签名）
+    echo "Building macOS app with code signing..."
+    flutter build macos --release
   else
     echo "No signing credentials provided, building without code signing"
+    # 构建macOS应用（不带签名）
+    flutter build macos --release --no-codesign
   fi
 else
   echo "Running in local environment"
+  # 本地环境构建
+  flutter build macos --release
 fi
-
-# 构建macOS应用
-echo "Building macOS app..."
-flutter build macos --release
 
 if [ $? -eq 0 ]; then
   echo "macOS app built successfully"
