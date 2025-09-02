@@ -93,12 +93,13 @@ jobs:
 
       - name: Build macOS version
         run: |
-          chmod +x scripts/build/build-macos-app.sh
-          scripts/build/build-macos-app.sh
+          chmod +x scripts/build/build-macos-app-enhanced.sh
+          scripts/build/build-macos-app-enhanced.sh
         env:
           MACOS_DEVELOPMENT_TEAM: ${{ secrets.MACOS_DEVELOPMENT_TEAM }}
           MACOS_SIGNING_CERTIFICATE: ${{ secrets.MACOS_SIGNING_CERTIFICATE }}
           MACOS_SIGNING_CERTIFICATE_PWD: ${{ secrets.MACOS_SIGNING_CERTIFICATE_PWD }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
 
       - name: Create release packages
         run: |
@@ -134,7 +135,7 @@ jobs:
       - name: Install basic dependencies
         run: |
           sudo apt update
-          sudo apt install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+          sudo apt install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libsecret-1-dev libayatana-appindicator3-dev
           flutter pub get
 
       - name: Build Linux version

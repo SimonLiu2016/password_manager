@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# macOS应用构建脚本
+# 增强版macOS应用构建脚本
 # 支持本地和CI环境中的代码签名
 
-echo "Building macOS app..."
+echo "Building macOS app (enhanced version)..."
 
 # 获取脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -27,15 +27,23 @@ if [[ -n "$CI" ]]; then
     "$SCRIPT_DIR/setup-macos-signing.sh"
     
     # 更新Xcode项目中的开发团队
+    echo "Updating Xcode project with development team..."
     sed -i '' "s/DEVELOPMENT_TEAM = \"\"/DEVELOPMENT_TEAM = \"$MACOS_DEVELOPMENT_TEAM\"/g" macos/Runner.xcodeproj/project.pbxproj
     
     # 构建macOS应用（带签名）
     echo "Building macOS app with code signing..."
-    flutter build macos --release
+    flutter build macos --release --build-number=${GITHUB_RUN_NUMBER:-1}
   else
     echo "No signing credentials provided, building without code signing"
+    
+    # 禁用Xcode项目中的代码签名
+    echo "Disabling code signing in Xcode project..."
+    sed -i '' 's/CODE_SIGN_IDENTITY = "Apple Development"/CODE_SIGN_IDENTITY = "-"/g' macos/Runner.xcodeproj/project.pbxproj
+    sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' macos/Runner.xcodeproj/project.pbxproj
+    sed -i '' 's/DEVELOPMENT_TEAM = "[^"]*"/DEVELOPMENT_TEAM = ""/g' macos/Runner.xcodeproj/project.pbxproj
+    
     # 构建macOS应用（不带签名）
-    # 使用build-number参数而不是--no-codesign
+    echo "Building macOS app without code signing..."
     flutter build macos --release --build-number=${GITHUB_RUN_NUMBER:-1}
   fi
 else
@@ -44,7 +52,9 @@ else
   flutter build macos --release
 fi
 
-if [ $? -eq 0 ]; then
+BUILD_RESULT=$?
+
+if [ $BUILD_RESULT -eq 0 ]; then
   echo "macOS app built successfully"
   
   # 查找构建的应用
@@ -71,7 +81,15 @@ if [ $? -eq 0 ]; then
     echo "Warning: Could not find build directory"
   fi
 else
-  echo "Error: Failed to build macOS app"
+  echo "Error: Failed to build macOS app (exit code: $BUILD_RESULT)"
+  
+  # 提供一些调试信息
+  echo "Flutter version:"
+  flutter --version
+  
+  echo "Available Flutter build options:"
+  flutter build macos -h
+  
   exit 1
 fi
 
