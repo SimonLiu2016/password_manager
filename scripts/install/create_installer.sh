@@ -261,7 +261,8 @@ WizardStyle=modern
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
-Name: "chinese"; MessagesFile: "compiler:Languages\\ChineseSimplified.isl"
+; 由于GitHub Actions环境中可能没有安装中文语言包，暂时只支持英语
+; 如果需要添加中文支持，可以在本地环境中取消注释上面一行
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
