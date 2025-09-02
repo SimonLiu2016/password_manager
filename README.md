@@ -182,11 +182,19 @@ flutter build ios --release           # iOS
 flutter build web --release
 ```
 
+## 📦 构建与安装指南
+
+有关详细的构建和安装说明，请参阅以下文档：
+
+- [构建指南](docs/guides/build-guide.md) - 一键打包 Windows 和 macOS 版本的详细说明
+- [安装程序指南](docs/guides/installer-guide.md) - 创建专业安装程序(.exe/.dmg)的详细说明
+- [GitHub Actions 指南](docs/guides/github-actions-guide.md) - CI/CD 自动化构建配置说明
+
 ## 📦 依赖包
 
 ### 核心依赖
 
-```yaml
+```
 dependencies:
   flutter_secure_storage: ^9.2.4 # 安全存储
   local_auth: ^2.3.0 # 生物识别认证

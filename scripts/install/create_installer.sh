@@ -81,6 +81,15 @@ if [ "$OS_TYPE" = "Darwin" ]; then
     
     echo "找到macOS应用: $MACOS_APP_FILE"
     
+    # 验证应用签名
+    echo "验证应用签名..."
+    codesign --verify --deep --strict "$MACOS_APP_FILE"
+    if [ $? -eq 0 ]; then
+        echo "✓ 应用签名验证通过"
+    else
+        echo "⚠ 警告: 应用签名验证失败，但仍继续创建安装包"
+    fi
+    
     # 创建DMG安装程序
     MACOS_DMG_NAME="password_manager-macos-$VERSION.dmg"
     echo "创建macOS DMG安装程序: $MACOS_DMG_NAME"
@@ -192,26 +201,29 @@ else
     # Windows系统或其他系统
     echo "创建Windows安装程序..."
     
-    # 检查是否安装了Inno Setup命令行工具
-    if ! command -v iscc &> /dev/null; then
-        echo "警告: 未找到Inno Setup命令行编译器(iscc)"
-        echo "请安装Inno Setup以创建Windows安装程序:"
-        echo "  访问: https://jrsoftware.org/isinfo.php"
-        echo "  或使用choco安装: choco install innosetup"
-        exit 1
-    fi
-    
-    # 检查是否存在Windows构建产物
-    WINDOWS_BUILD_DIR="$PROJECT_DIR/build/windows/x64/runner/Release"
-    if [ ! -d "$WINDOWS_BUILD_DIR" ]; then
-        echo "错误: 未找到Windows构建产物，请先运行构建命令:"
-        echo "  flutter build windows --release"
-        exit 1
-    fi
-    
-    # 创建Inno Setup脚本
-    INNO_SCRIPT="$OUTPUT_DIR/password_manager_installer.iss"
-    cat > "$INNO_SCRIPT" << EOF
+    # 检查是否在Windows环境下运行（通过环境变量判断）
+    if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ -n "$WINDIR" ]]; then
+        # Windows环境
+        # 检查是否安装了Inno Setup命令行工具
+        if ! command -v iscc &> /dev/null; then
+            echo "警告: 未找到Inno Setup命令行编译器(iscc)"
+            echo "请安装Inno Setup以创建Windows安装程序:"
+            echo "  访问: https://jrsoftware.org/isinfo.php"
+            echo "  或使用choco安装: choco install innosetup"
+            exit 1
+        fi
+        
+        # 检查是否存在Windows构建产物
+        WINDOWS_BUILD_DIR="$PROJECT_DIR/build/windows/x64/runner/Release"
+        if [ ! -d "$WINDOWS_BUILD_DIR" ]; then
+            echo "错误: 未找到Windows构建产物，请先运行构建命令:"
+            echo "  flutter build windows --release"
+            exit 1
+        fi
+        
+        # 创建Inno Setup脚本
+        INNO_SCRIPT="$OUTPUT_DIR/password_manager_installer.iss"
+        cat > "$INNO_SCRIPT" << EOF
 ; Password Manager Windows Installer Script
 ; Inno Setup脚本
 
@@ -259,23 +271,43 @@ Name: "{autodesktop}\\{#MyAppName}"; Filename: "{app}\\{#MyAppExeName}"; Tasks: 
 Filename: "{app}\\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 EOF
 
-    # 编译安装程序
-    echo "编译Windows安装程序..."
-    iscc "$INNO_SCRIPT"
-    
-    if [ $? -eq 0 ]; then
-        WINDOWS_INSTALLER=$(ls "$OUTPUT_DIR"/password_manager-windows-*.exe 2>/dev/null | head -n 1)
-        if [ -n "$WINDOWS_INSTALLER" ] && [ -f "$WINDOWS_INSTALLER" ]; then
-            echo "✓ Windows安装程序创建成功: $WINDOWS_INSTALLER"
-            EXE_SIZE=$(du -h "$WINDOWS_INSTALLER" | cut -f1)
-            echo "  文件大小: $EXE_SIZE"
+        # 编译安装程序
+        echo "编译Windows安装程序..."
+        iscc "$INNO_SCRIPT"
+        
+        if [ $? -eq 0 ]; then
+            WINDOWS_INSTALLER=$(ls "$OUTPUT_DIR"/password_manager-windows-*.exe 2>/dev/null | head -n 1)
+            if [ -n "$WINDOWS_INSTALLER" ] && [ -f "$WINDOWS_INSTALLER" ]; then
+                echo "✓ Windows安装程序创建成功: $WINDOWS_INSTALLER"
+                EXE_SIZE=$(du -h "$WINDOWS_INSTALLER" | cut -f1)
+                echo "  文件大小: $EXE_SIZE"
+            else
+                echo "✗ Windows安装程序创建失败"
+                exit 1
+            fi
         else
-            echo "✗ Windows安装程序创建失败"
+            echo "✗ Windows安装程序编译失败"
             exit 1
         fi
     else
-        echo "✗ Windows安装程序编译失败"
-        exit 1
+        echo "警告: 当前环境不支持Windows安装程序创建"
+        echo "请在Windows环境下运行此脚本以创建Windows安装程序"
+        # 但仍然创建ZIP包作为替代
+        WINDOWS_BUILD_DIR="$PROJECT_DIR/build/windows/x64/runner/Release"
+        if [ -d "$WINDOWS_BUILD_DIR" ]; then
+            WINDOWS_ZIP_NAME="password_manager-windows-$VERSION.zip"
+            echo "创建Windows ZIP包: $WINDOWS_ZIP_NAME"
+            cd "$WINDOWS_BUILD_DIR"
+            zip -r "$OUTPUT_DIR/$WINDOWS_ZIP_NAME" ./* >/dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                echo "✓ Windows ZIP包创建成功: $OUTPUT_DIR/$WINDOWS_ZIP_NAME"
+            else
+                echo "⚠ 警告: Windows ZIP包创建失败"
+            fi
+            cd "$PROJECT_DIR"
+        else
+            echo "警告: 未找到Windows构建产物"
+        fi
     fi
 fi
 
