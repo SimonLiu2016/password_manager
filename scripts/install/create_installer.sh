@@ -224,6 +224,11 @@ else
         
         # 创建Inno Setup脚本
         INNO_SCRIPT="$OUTPUT_DIR/password_manager_installer.iss"
+        # 使用相对于项目根目录的正确路径
+        # 在GitHub Actions Windows环境中：
+        # - 脚本在 build/installer 目录中执行
+        # - LICENSE文件在项目根目录
+        # - Windows构建产物在 build/windows/x64/runner/Release
         cat > "$INNO_SCRIPT" << EOF
 ; Password Manager Windows Installer Script
 ; Inno Setup脚本
@@ -245,11 +250,11 @@ AppUpdatesURL={#MyAppURL}
 
 DefaultDirName={autopf}\\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=$PROJECT_DIR\\LICENSE
+LicenseFile=..\\..\\LICENSE
 PrivilegesRequired=admin
-OutputDir=$OUTPUT_DIR
+OutputDir=.
 OutputBaseFilename=password_manager-windows-{#MyAppVersion}-setup
-SetupIconFile=$PROJECT_DIR\\windows\\runner\\resources\\app_icon.ico
+SetupIconFile=..\\..\\windows\\runner\\resources\\app_icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -262,7 +267,7 @@ Name: "chinese"; MessagesFile: "compiler:Languages\\ChineseSimplified.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "$WINDOWS_BUILD_DIR\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: ..\\..\\build\\windows\\x64\\runner\\Release\\*; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\\{#MyAppName}"; Filename: "{app}\\{#MyAppExeName}"
