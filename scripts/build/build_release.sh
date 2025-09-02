@@ -20,8 +20,9 @@ echo "Flutter版本信息:"
 flutter --version
 echo
 
-# 获取项目路径
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 获取项目路径 - 修正路径获取逻辑，确保指向项目根目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 echo "项目路径: $PROJECT_DIR"
 echo
 

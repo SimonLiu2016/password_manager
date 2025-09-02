@@ -38,6 +38,15 @@ if [[ -n "$CI" ]]; then
     
     # 禁用Xcode项目中的代码签名
     echo "Disabling code signing in Xcode project..."
+    # Debug配置
+    sed -i '' 's/CODE_SIGN_IDENTITY = "Apple Development"/CODE_SIGN_IDENTITY = "-"/g' macos/Runner.xcodeproj/project.pbxproj
+    sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' macos/Runner.xcodeproj/project.pbxproj
+    sed -i '' 's/DEVELOPMENT_TEAM = "[^"]*"/DEVELOPMENT_TEAM = ""/g' macos/Runner.xcodeproj/project.pbxproj
+    # Release配置
+    sed -i '' 's/CODE_SIGN_IDENTITY = "Apple Distribution"/CODE_SIGN_IDENTITY = "-"/g' macos/Runner.xcodeproj/project.pbxproj
+    sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' macos/Runner.xcodeproj/project.pbxproj
+    sed -i '' 's/DEVELOPMENT_TEAM = "[^"]*"/DEVELOPMENT_TEAM = ""/g' macos/Runner.xcodeproj/project.pbxproj
+    # Profile配置
     sed -i '' 's/CODE_SIGN_IDENTITY = "Apple Development"/CODE_SIGN_IDENTITY = "-"/g' macos/Runner.xcodeproj/project.pbxproj
     sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' macos/Runner.xcodeproj/project.pbxproj
     sed -i '' 's/DEVELOPMENT_TEAM = "[^"]*"/DEVELOPMENT_TEAM = ""/g' macos/Runner.xcodeproj/project.pbxproj

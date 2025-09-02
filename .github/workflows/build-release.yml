@@ -47,7 +47,7 @@ jobs:
       - name: Create Windows installer
         run: |
           # Run the installer creation script
-          .\scripts\install\create_installer.sh
+          bash ./scripts/install/create_installer.sh
         shell: bash
 
       - name: Upload Windows artifacts
@@ -100,6 +100,7 @@ jobs:
           MACOS_SIGNING_CERTIFICATE: ${{ secrets.MACOS_SIGNING_CERTIFICATE }}
           MACOS_SIGNING_CERTIFICATE_PWD: ${{ secrets.MACOS_SIGNING_CERTIFICATE_PWD }}
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          CI: true
 
       - name: Create release packages
         run: |
@@ -145,8 +146,36 @@ jobs:
 
       - name: Create release packages
         run: |
-          chmod +x scripts/build/build_release.sh
-          ./scripts/build/build_release.sh
+          chmod +x scripts/build/build-linux-app.sh
+          # 创建Linux版本的发布包
+          PROJECT_DIR=$(pwd)
+          VERSION=$(grep "version:" pubspec.yaml | cut -d ':' -f 2 | tr -d ' ')
+          OUTPUT_DIR="$PROJECT_DIR/build/release"
+          mkdir -p "$OUTPUT_DIR"
+
+          # 查找Linux构建文件
+          LINUX_BUILD_DIR="$PROJECT_DIR/build/linux/x64/release/bundle"
+          if [ -d "$LINUX_BUILD_DIR" ]; then
+            # 创建Linux压缩包
+            LINUX_TAR_NAME="password_manager-linux-$VERSION.tar.gz"
+            echo "创建Linux安装包: $LINUX_TAR_NAME"
+            
+            # 进入Linux构建目录并创建压缩包
+            cd "$LINUX_BUILD_DIR"
+            tar -czf "$OUTPUT_DIR/$LINUX_TAR_NAME" ./*
+            
+            if [ $? -eq 0 ]; then
+              echo "✓ Linux安装包创建成功: $OUTPUT_DIR/$LINUX_TAR_NAME"
+              LINUX_SIZE=$(du -h "$OUTPUT_DIR/$LINUX_TAR_NAME" | cut -f1)
+              echo "  文件大小: $LINUX_SIZE"
+            else
+              echo "⚠ 警告: Linux安装包创建失败"
+            fi
+          else
+            echo "⚠ 警告: 未找到Linux构建输出目录"
+          fi
+
+          cd "$PROJECT_DIR"
 
       - name: Create installers
         run: |
@@ -207,5 +236,6 @@ jobs:
             release-files/*.dmg
             release-files/*.exe
             release-files/*.sh
+            release-files/*.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
