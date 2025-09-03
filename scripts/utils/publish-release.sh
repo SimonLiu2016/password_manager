@@ -117,50 +117,144 @@ echo
 
 # 创建 GitHub Release（如果安装了 GitHub CLI）
 if command -v gh &> /dev/null; then
-    echo "创建 GitHub Release..."
+    echo "检查 GitHub CLI 认证状态..."
     
-    # 准备发布说明
-    if [ -n "$RELEASE_NOTES_PATH" ]; then
-        # 提取版本对应的发布说明
-        if [ -f "$RELEASE_NOTES_PATH" ]; then
-            # 简单提取发布说明（从版本标题开始到下一个版本标题或文件结尾）
-            RELEASE_NOTES_TEMP=$(mktemp)
-            if [[ "$RELEASE_NOTES_PATH" == *"CHANGELOG"* ]]; then
-                # 对于 CHANGELOG 文件，提取特定版本的信息
-                awk "/\\[$VERSION\\]/,/(\\[.*\\]|^==)/" "$RELEASE_NOTES_PATH" | sed '/^==/d' > "$RELEASE_NOTES_TEMP"
+    # 检查认证状态
+    if gh auth status &> /dev/null; then
+        echo "GitHub CLI 已认证"
+        GH_AUTHENTICATED=1
+    else
+        echo "警告: GitHub CLI 未认证或认证已过期"
+        echo "错误信息:"
+        gh auth status || true
+        echo
+        echo "注意: 未认证的 GitHub API 请求有较低的速率限制"
+        echo "建议重新认证以获得更高的速率限制和更好的体验"
+        echo
+        echo "请运行以下命令重新认证："
+        echo "  gh auth logout -h github.com"
+        echo "  gh auth login -h github.com"
+        echo
+        read -p "是否继续发布流程（跳过 GitHub Release 创建）？(y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "取消发布"
+            exit 1
+        fi
+        GH_AUTHENTICATED=0
+    fi
+    
+    if [[ $GH_AUTHENTICATED -eq 1 ]]; then
+        echo "创建 GitHub Release..."
+        
+        # 准备发布说明
+        if [ -n "$RELEASE_NOTES_PATH" ]; then
+            # 提取版本对应的发布说明
+            if [ -f "$RELEASE_NOTES_PATH" ]; then
+                # 简单提取发布说明（从版本标题开始到下一个版本标题或文件结尾）
+                RELEASE_NOTES_TEMP=$(mktemp)
+                if [[ "$RELEASE_NOTES_PATH" == *"CHANGELOG"* ]]; then
+                    # 对于 CHANGELOG 文件，提取特定版本的信息
+                    awk "/\\[$VERSION\\]/,/(\\[.*\\]|^==)/" "$RELEASE_NOTES_PATH" | sed '/^==/d' > "$RELEASE_NOTES_TEMP"
+                else
+                    # 对于 RELEASE_NOTES 文件，使用整个文件
+                    cp "$RELEASE_NOTES_PATH" "$RELEASE_NOTES_TEMP"
+                fi
+                
+                # 创建 Release
+                gh release create "v$VERSION" \
+                    --title "Password Manager v$VERSION" \
+                    --notes-file "$RELEASE_NOTES_TEMP"
+                
+                # 检查命令执行结果
+                if [ $? -eq 0 ]; then
+                    echo "✓ GitHub Release 创建成功"
+                else
+                    echo "✗ GitHub Release 创建失败"
+                    echo
+                    echo "可能的原因："
+                    echo "1. GitHub API 速率限制 (未认证请求限制较低)"
+                    echo "2. 网络连接问题"
+                    echo "3. 认证信息过期"
+                    echo
+                    echo "解决方法："
+                    echo "1. 重新认证 GitHub CLI:"
+                    echo "   gh auth logout -h github.com"
+                    echo "   gh auth login -h github.com"
+                    echo "2. 或者手动在 GitHub 上创建 Release:"
+                    echo "   访问 https://github.com/v8en/password_manager/releases/new"
+                fi
+                
+                # 清理临时文件
+                rm "$RELEASE_NOTES_TEMP"
             else
-                # 对于 RELEASE_NOTES 文件，使用整个文件
-                cp "$RELEASE_NOTES_PATH" "$RELEASE_NOTES_TEMP"
+                # 没有发布说明文件，创建简单的 Release
+                gh release create "v$VERSION" \
+                    --title "Password Manager v$VERSION" \
+                    --notes "Release version $VERSION"
+                
+                if [ $? -eq 0 ]; then
+                    echo "✓ GitHub Release 创建成功"
+                else
+                    echo "✗ GitHub Release 创建失败"
+                    echo
+                    echo "可能的原因："
+                    echo "1. GitHub API 速率限制 (未认证请求限制较低)"
+                    echo "2. 网络连接问题"
+                    echo "3. 认证信息过期"
+                    echo
+                    echo "解决方法："
+                    echo "1. 重新认证 GitHub CLI:"
+                    echo "   gh auth logout -h github.com"
+                    echo "   gh auth login -h github.com"
+                    echo "2. 或者手动在 GitHub 上创建 Release:"
+                    echo "   访问 https://github.com/v8en/password_manager/releases/new"
+                fi
             fi
-            
-            # 创建 Release
-            gh release create "v$VERSION" \
-                --title "Password Manager v$VERSION" \
-                --notes-file "$RELEASE_NOTES_TEMP"
-            
-            # 清理临时文件
-            rm "$RELEASE_NOTES_TEMP"
         else
-            # 没有发布说明文件，创建简单的 Release
+            # 没有发布说明，创建简单的 Release
             gh release create "v$VERSION" \
                 --title "Password Manager v$VERSION" \
                 --notes "Release version $VERSION"
+            
+            if [ $? -eq 0 ]; then
+                echo "✓ GitHub Release 创建成功"
+            else
+                echo "✗ GitHub Release 创建失败"
+                echo
+                echo "可能的原因："
+                echo "1. GitHub API 速率限制 (未认证请求限制较低)"
+                echo "2. 网络连接问题"
+                echo "3. 认证信息过期"
+                echo
+                echo "解决方法："
+                echo "1. 重新认证 GitHub CLI:"
+                echo "   gh auth logout -h github.com"
+                echo "   gh auth login -h github.com"
+                echo "2. 或者手动在 GitHub 上创建 Release:"
+                echo "   访问 https://github.com/v8en/password_manager/releases/new"
+            fi
         fi
     else
-        # 没有发布说明，创建简单的 Release
-        gh release create "v$VERSION" \
-            --title "Password Manager v$VERSION" \
-            --notes "Release version $VERSION"
-    fi
-    
-    if [ $? -eq 0 ]; then
-        echo "✓ GitHub Release 创建成功"
-    else
-        echo "✗ GitHub Release 创建失败"
+        echo "跳过 GitHub Release 创建"
+        echo
+        echo "您可以稍后手动创建 Release："
+        echo "1. 重新认证 GitHub CLI (可提高 API 速率限制):"
+        echo "   gh auth logout -h github.com"
+        echo "   gh auth login -h github.com"
+        echo "2. 或者手动在 GitHub 上创建 Release:"
+        echo "   访问 https://github.com/v8en/password_manager/releases/new"
+        echo "3. 选择标签 v$VERSION"
+        echo "4. 标题填写: Password Manager v$VERSION"
+        echo "5. 添加发布说明"
+        echo "6. 点击发布"
     fi
 else
     echo "未安装 GitHub CLI (gh)，跳过自动创建 Release"
-    echo "请手动在 GitHub 上创建 Release："
+    echo "请注意：未认证的 GitHub API 请求有较低的速率限制"
+    echo "建议安装 GitHub CLI 并进行认证以获得更好的体验"
+    echo
+    echo "手动创建 Release 的步骤："
     echo "1. 访问 https://github.com/v8en/password_manager/releases/new"
     echo "2. 选择标签 v$VERSION"
     echo "3. 标题填写: Password Manager v$VERSION"
