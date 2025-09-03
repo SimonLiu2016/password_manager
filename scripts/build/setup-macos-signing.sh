@@ -31,8 +31,8 @@ echo $MACOS_SIGNING_CERTIFICATE | base64 --decode > certificate.p12
 security import certificate.p12 -k build.keychain -P $MACOS_SIGNING_CERTIFICATE_PWD -T /usr/bin/codesign
 rm -rf certificate.p12
 
-# 解码并导入配置文件
-echo "Importing provisioning profile..."
+# 解码并保存配置文件（但不直接导入，让Xcode自动处理）
+echo "Saving provisioning profile for Xcode to use..."
 mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
 echo $MACOS_PROVISIONING_PROFILE | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/password_manager.provisionprofile
 

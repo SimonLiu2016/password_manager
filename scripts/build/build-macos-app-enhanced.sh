@@ -30,14 +30,14 @@ if [[ -n "$CI" ]]; then
     echo "Updating Xcode project with development team..."
     sed -i '' "s/DEVELOPMENT_TEAM = \"[^\"]*\"/DEVELOPMENT_TEAM = \"$MACOS_DEVELOPMENT_TEAM\"/g" macos/Runner.xcodeproj/project.pbxproj
     
-    # 启用自动签名
+    # 启用自动签名并移除手动配置文件指定
     echo "Enabling automatic code signing..."
     sed -i '' 's/CODE_SIGN_IDENTITY = "-"/CODE_SIGN_IDENTITY = "Apple Distribution"/g' macos/Runner.xcodeproj/project.pbxproj
     sed -i '' 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' macos/Runner.xcodeproj/project.pbxproj
     
-    # 设置配置文件
-    echo "Setting provisioning profile..."
-    sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = ""/PROVISIONING_PROFILE_SPECIFIER = "password_manager"/g' macos/Runner.xcodeproj/project.pbxproj
+    # 移除手动指定的配置文件，让Xcode自动处理
+    echo "Setting provisioning profile to automatic..."
+    sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = "[^"]*"/PROVISIONING_PROFILE_SPECIFIER = ""/g' macos/Runner.xcodeproj/project.pbxproj
     
     # 构建macOS应用（带签名）
     echo "Building macOS app with code signing..."

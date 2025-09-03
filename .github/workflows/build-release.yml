@@ -82,11 +82,6 @@ jobs:
           if [[ -n "$MACOS_DEVELOPMENT_TEAM" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE_PWD" ]] && [[ -n "$MACOS_PROVISIONING_PROFILE" ]]; then
             chmod +x scripts/build/setup-macos-signing.sh
             scripts/build/setup-macos-signing.sh
-            
-            # Import provisioning profile
-            echo "Importing provisioning profile..."
-            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-            echo $MACOS_PROVISIONING_PROFILE | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/password_manager.provisionprofile
           else
             echo "Skipping code signing setup - missing credentials"
           fi
