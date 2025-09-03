@@ -7,8 +7,21 @@ on:
       - "docs/privacy-policy.html"
   workflow_dispatch:
 
+# 设置权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 环境变量
+env:
+  GITHUB_PAGES: true
+
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
