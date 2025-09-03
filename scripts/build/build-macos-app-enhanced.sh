@@ -20,15 +20,24 @@ flutter pub get
 if [[ -n "$CI" ]]; then
   echo "Running in CI environment"
   
-  # 如果有签名证书设置，则配置签名
-  if [[ -n "$MACOS_DEVELOPMENT_TEAM" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE_PWD" ]]; then
-    echo "Setting up code signing..."
+  # 如果有签名证书和配置文件设置，则配置签名
+  if [[ -n "$MACOS_DEVELOPMENT_TEAM" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE_PWD" ]] && [[ -n "$MACOS_PROVISIONING_PROFILE" ]]; then
+    echo "Setting up code signing with provisioning profile..."
     chmod +x "$SCRIPT_DIR/setup-macos-signing.sh"
     "$SCRIPT_DIR/setup-macos-signing.sh"
     
     # 更新Xcode项目中的开发团队
     echo "Updating Xcode project with development team..."
-    sed -i '' "s/DEVELOPMENT_TEAM = \"\"/DEVELOPMENT_TEAM = \"$MACOS_DEVELOPMENT_TEAM\"/g" macos/Runner.xcodeproj/project.pbxproj
+    sed -i '' "s/DEVELOPMENT_TEAM = \"[^\"]*\"/DEVELOPMENT_TEAM = \"$MACOS_DEVELOPMENT_TEAM\"/g" macos/Runner.xcodeproj/project.pbxproj
+    
+    # 启用自动签名
+    echo "Enabling automatic code signing..."
+    sed -i '' 's/CODE_SIGN_IDENTITY = "-"/CODE_SIGN_IDENTITY = "Apple Distribution"/g' macos/Runner.xcodeproj/project.pbxproj
+    sed -i '' 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' macos/Runner.xcodeproj/project.pbxproj
+    
+    # 设置配置文件
+    echo "Setting provisioning profile..."
+    sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = ""/PROVISIONING_PROFILE_SPECIFIER = "password_manager"/g' macos/Runner.xcodeproj/project.pbxproj
     
     # 构建macOS应用（带签名）
     echo "Building macOS app with code signing..."

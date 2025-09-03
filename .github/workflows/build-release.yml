@@ -79,9 +79,14 @@ jobs:
 
       - name: Setup macOS signing (optional)
         run: |
-          if [[ -n "$MACOS_DEVELOPMENT_TEAM" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE_PWD" ]]; then
+          if [[ -n "$MACOS_DEVELOPMENT_TEAM" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE" ]] && [[ -n "$MACOS_SIGNING_CERTIFICATE_PWD" ]] && [[ -n "$MACOS_PROVISIONING_PROFILE" ]]; then
             chmod +x scripts/build/setup-macos-signing.sh
             scripts/build/setup-macos-signing.sh
+            
+            # Import provisioning profile
+            echo "Importing provisioning profile..."
+            mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+            echo $MACOS_PROVISIONING_PROFILE | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/password_manager.provisionprofile
           else
             echo "Skipping code signing setup - missing credentials"
           fi
@@ -89,6 +94,7 @@ jobs:
           MACOS_DEVELOPMENT_TEAM: ${{ secrets.MACOS_DEVELOPMENT_TEAM }}
           MACOS_SIGNING_CERTIFICATE: ${{ secrets.MACOS_SIGNING_CERTIFICATE }}
           MACOS_SIGNING_CERTIFICATE_PWD: ${{ secrets.MACOS_SIGNING_CERTIFICATE_PWD }}
+          MACOS_PROVISIONING_PROFILE: ${{ secrets.MACOS_PROVISIONING_PROFILE }}
         continue-on-error: true
 
       - name: Build macOS version
@@ -99,6 +105,7 @@ jobs:
           MACOS_DEVELOPMENT_TEAM: ${{ secrets.MACOS_DEVELOPMENT_TEAM }}
           MACOS_SIGNING_CERTIFICATE: ${{ secrets.MACOS_SIGNING_CERTIFICATE }}
           MACOS_SIGNING_CERTIFICATE_PWD: ${{ secrets.MACOS_SIGNING_CERTIFICATE_PWD }}
+          MACOS_PROVISIONING_PROFILE: ${{ secrets.MACOS_PROVISIONING_PROFILE }}
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
           CI: true
 

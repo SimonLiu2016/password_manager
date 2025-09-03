@@ -12,9 +12,9 @@ if [[ -z "$CI" ]]; then
 fi
 
 # 检查必要的环境变量
-if [[ -z "$MACOS_DEVELOPMENT_TEAM" ]] || [[ -z "$MACOS_SIGNING_CERTIFICATE" ]] || [[ -z "$MACOS_SIGNING_CERTIFICATE_PWD" ]]; then
+if [[ -z "$MACOS_DEVELOPMENT_TEAM" ]] || [[ -z "$MACOS_SIGNING_CERTIFICATE" ]] || [[ -z "$MACOS_SIGNING_CERTIFICATE_PWD" ]] || [[ -z "$MACOS_PROVISIONING_PROFILE" ]]; then
   echo "Missing required environment variables for code signing."
-  echo "Please set MACOS_DEVELOPMENT_TEAM, MACOS_SIGNING_CERTIFICATE, and MACOS_SIGNING_CERTIFICATE_PWD."
+  echo "Please set MACOS_DEVELOPMENT_TEAM, MACOS_SIGNING_CERTIFICATE, MACOS_SIGNING_CERTIFICATE_PWD, and MACOS_PROVISIONING_PROFILE."
   exit 1
 fi
 
@@ -30,6 +30,11 @@ echo "Importing signing certificate..."
 echo $MACOS_SIGNING_CERTIFICATE | base64 --decode > certificate.p12
 security import certificate.p12 -k build.keychain -P $MACOS_SIGNING_CERTIFICATE_PWD -T /usr/bin/codesign
 rm -rf certificate.p12
+
+# 解码并导入配置文件
+echo "Importing provisioning profile..."
+mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+echo $MACOS_PROVISIONING_PROFILE | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/password_manager.provisionprofile
 
 # 设置钥匙链权限
 security set-key-partition-list -S apple-tool:,apple: -s -k "temporary" build.keychain
